@@ -115,6 +115,35 @@ const contactCards = [
   },
 ];
 
+// footer data
+const footerInfor = [
+  {
+    title: "Services",
+    infoType: [
+      "Business Licenses",
+      "Building Permits",
+      "Food Handler's Permits",
+      "Transport Licenses",
+    ],
+  },
+  {
+    title: "Support",
+    infoType: ["Help Center", "Application Status", "Contact Support", "FAQs"],
+  },
+  {
+    title: "Legal",
+    infoType: [
+      "Privacy Policy",
+      "Terms of Service",
+      "Data Protection",
+      "Accessibility",
+    ],
+  },
+];
+
+// get current year
+const currentYear = new Date().getFullYear();
+
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
@@ -157,10 +186,10 @@ export default function HomePage() {
                 Contact
               </Link>
               <Button variant="outline" size="sm" asChild>
-                <a href="/login">Sign In</a>
+                <Link href="/login">Sign In</Link>
               </Button>
               <Button size="sm" asChild>
-                <a href="/signup">Apply Now</a>
+                <Link href="/signup">Apply Now</Link>
               </Button>
             </nav>
           </div>
@@ -396,6 +425,47 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Page footer */}
+      <footer className="bg-primary text-primary-foreground py-12">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-4 gap-8">
+            {/* first footer div */}
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 bg-primary-foreground/20 rounded-lg flex items-center justify-center">
+                  <Shield className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold">Murang'a County</h3>
+                  <p className="text-sm opacity-80">Permits & Licensing</p>
+                </div>
+              </div>
+              <p className="text-sm opacity-80 text-pretty">
+                Official digital platform for Murang'a County government
+                services.
+              </p>
+            </div>
+            {/* second footer div */}
+            {/* mappinh footerInfor to eah div element */}
+            {footerInfor.map((info, index) => (
+              <div key={index}>
+                <h4 className="font-semibold mb-4">{info.title}</h4>
+                <ul className="space-y-2 text-sm opacity-80">
+                  {info.infoType.map((singleInfor, index) => (
+                    <li key={index}>{singleInfor}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <div className="border-t border-primary-foreground/20 mt-8 pt-8 text-center">
+            <p className="text-sm opacity-80">
+              © {currentYear} Murang'a County Government. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
