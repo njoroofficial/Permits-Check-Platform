@@ -57,6 +57,30 @@ const services = [
   },
 ];
 
+// Application Process
+const applicationProcesses = [
+  {
+    step: "01",
+    title: "Create Account",
+    description: "Register with your ID number and contact information",
+  },
+  {
+    step: "02",
+    title: "Fill Application",
+    description: "Complete the online form with required details",
+  },
+  {
+    step: "03",
+    title: "Submit Documents",
+    description: "Upload necessary supporting documents",
+  },
+  {
+    step: "04",
+    title: "Track Progress",
+    description: "Monitor your application status in real-time",
+  },
+];
+
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
@@ -160,35 +184,66 @@ export default function HomePage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* mapp each service data to a card component */}
 
-            {services.map((service, index) => {
-              return (
-                <Card key={index} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                        <service.icon className="w-5 h-5 text-primary" />
-                      </div>
-                      <CardTitle className="text-lg">{service.title}</CardTitle>
+            {services.map((service, index) => (
+              <Card key={index} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <service.icon className="w-5 h-5 text-primary" />
                     </div>
-                    <CardDescription className="text-pretty">
-                      {service.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex justify-between items-center mb-4">
-                      <div className="text-sm">
-                        <span className="font-medium">Fee:</span> {service.fee}
-                      </div>
-                      <div className="text-sm">
-                        <span className="font-medium">Duration:</span>{" "}
-                        {service.duration}
-                      </div>
+                    <CardTitle className="text-lg">{service.title}</CardTitle>
+                  </div>
+                  <CardDescription className="text-pretty">
+                    {service.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="text-sm">
+                      <span className="font-medium">Fee:</span> {service.fee}
                     </div>
-                    <Button className="w-full">Apply Now</Button>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                    <div className="text-sm">
+                      <span className="font-medium">Duration:</span>{" "}
+                      {service.duration}
+                    </div>
+                  </div>
+                  <Button className="w-full">Apply Now</Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Process Section */}
+      <section className="py-20 bg-muted/30">
+        <div className="container mx-auto px-4">
+          {/* Application Process welcome text */}
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-balance">
+              Simple Application Process
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
+              Our streamlined process makes it easy to apply for and track your
+              permits
+            </p>
+          </div>
+          {/* Application steps */}
+          <div className="grid md:grid-cols-4 gap-8">
+            {/* Mapp each application process step */}
+            {applicationProcesses.map((applicationProcess, index) => (
+              <div key={index} className="text-center">
+                <div className="w-16 h-16 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
+                  {applicationProcess.step}
+                </div>
+                <h3 className="text-lg font-semibold mb-2">
+                  {applicationProcess.title}
+                </h3>
+                <p className="text-muted-foreground text-pretty">
+                  {applicationProcess.description}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
