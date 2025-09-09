@@ -7,7 +7,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ArrowRight, CheckCircle, FileText, Shield, Users } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle,
+  FileText,
+  Mail,
+  MapPin,
+  Phone,
+  Shield,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 
 // services data
@@ -81,6 +90,31 @@ const applicationProcesses = [
   },
 ];
 
+// contact data
+const contactCards = [
+  {
+    icon: Phone,
+    title: "Phone Support",
+    description: "Call us during business hours",
+    contactMethod: "+254 704 125 004",
+    time: "Mon-Fri: 8AM-5PM",
+  },
+  {
+    icon: Mail,
+    title: "Email Support",
+    description: "Send us your questions",
+    contactMethod: "permits@muranga.go.ke",
+    time: "Response within 24hrs",
+  },
+  {
+    icon: MapPin,
+    title: "Visit Us",
+    description: "County Headquarters",
+    contactMethod: "Murang'a Town",
+    time: "Mon-Fri: 8AM-5PM",
+  },
+];
+
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
@@ -116,12 +150,12 @@ export default function HomePage() {
               >
                 About
               </Link>
-              <a
+              <Link
                 href="#contact"
                 className="text-sm font-medium hover:text-primary transition-colors"
               >
                 Contact
-              </a>
+              </Link>
               <Button variant="outline" size="sm" asChild>
                 <a href="/login">Sign In</a>
               </Button>
@@ -320,6 +354,45 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact section */}
+      <section id="contact" className="py-20 bg-muted/30">
+        <div className="container mx-auto px-4">
+          {/* contact section welcome text */}
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-balance">
+              Contact Us
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto text-pretty">
+              Need help with your application? Our support team is here to
+              assist you
+            </p>
+          </div>
+          {/* contact section cards */}
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* mapping contact data to a card */}
+            {contactCards.map((contactCard, index) => (
+              <Card key={index}>
+                <CardHeader className="text-center">
+                  <contactCard.icon className="w-8 h-8 text-primary mx-auto mb-2" />
+                  <CardTitle>{contactCard.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <p className="mb-2 text-muted-foreground">
+                    {contactCard.description}
+                  </p>
+                  <p className="font-semibold mb-1">
+                    {contactCard.contactMethod}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {contactCard.time}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
