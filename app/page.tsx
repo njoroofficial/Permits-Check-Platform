@@ -110,12 +110,12 @@ export default function HomePage() {
               >
                 Services
               </Link>
-              <a
+              <Link
                 href="#about"
                 className="text-sm font-medium hover:text-primary transition-colors"
               >
                 About
-              </a>
+              </Link>
               <a
                 href="#contact"
                 className="text-sm font-medium hover:text-primary transition-colors"
@@ -244,6 +244,82 @@ export default function HomePage() {
                 </p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* About section */}
+      <section id="about" className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* About section first grid */}
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-balance">
+                About Murang'a County Digital Services
+              </h2>
+              <p className="text-lg text-muted-foreground text-pretty mb-6">
+                We are committed to providing efficient, transparent, and
+                accessible government services to all residents of Murang'a
+                County. Our digital platform eliminates bureaucratic delays and
+                ensures fair processing of all applications.
+              </p>
+              <div className="grid sm:grid-cols-2 gap-4 mb-6">
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-primary" />
+                  <span>Fast Processing</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-primary" />
+                  <span>Transparent Fees</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-primary" />
+                  <span>Real-time Tracking</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-primary" />
+                  <span>Secure Platform</span>
+                </div>
+              </div>
+              <Button size="lg">Learn More</Button>
+            </div>
+            {/* About section statistics grid */}
+            <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl p-8">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-primary mb-2">
+                    5,000+
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Applications Processed
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-primary mb-2">
+                    24/7
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Online Access
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-primary mb-2">
+                    95%
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Satisfaction Rate
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-primary mb-2">
+                    3 Days
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Average Processing
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
