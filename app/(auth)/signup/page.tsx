@@ -1,3 +1,4 @@
+import SignupForm from "@/components/ui/auth/signup-form";
 import { Shield } from "lucide-react";
 import Link from "next/link";
 
@@ -21,6 +22,7 @@ export default function SignupPage() {
             </div>
           </Link>
         </div>
+        <SignupForm />
       </div>
     </div>
   );
