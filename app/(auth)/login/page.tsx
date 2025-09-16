@@ -1,3 +1,4 @@
+import LoginForm from "@/components/ui/auth/login-form";
 import { Shield } from "lucide-react";
 import Link from "next/link";
 
@@ -21,6 +22,7 @@ export default function LoginPage() {
             </div>
           </Link>
         </div>
+        <LoginForm />
       </div>
     </div>
   );
