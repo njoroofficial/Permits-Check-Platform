@@ -1,0 +1,119 @@
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Shield, LogOut, User, Settings } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+
+export function DashboardHeader() {
+  const { user, logout } = useAuth();
+  const router = useRouter();
+
+  //   handle user logout
+  const handleLogout = () => {
+    logout();
+    router.push("/");
+  };
+
+  //   dashboard link based on user roles
+  const dashboardLink =
+    user?.role === "officer" ? "/officer-dashboard" : "/dashboard";
+  const navItems =
+    user?.role === "officer"
+      ? [
+          { href: "/officer-dashboard", label: "Dashboard" },
+          {
+            href: "/officer-dashboard/applications",
+            label: "All Applications",
+          },
+          { href: "/officer-dashboard/reports", label: "Reports" },
+        ]
+      : [
+          { href: "/dashboard", label: "Dashboard" },
+          { href: "/applications", label: "My Applications" },
+          { href: "/apply", label: "Apply Now" },
+        ];
+  return (
+    <header className="border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 sticky top-0 z-50">
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex items-center justify-between">
+          <Link href={dashboardLink} className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+              <Shield className="w-6 h-6 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="font-bold text-lg text-balance">
+                Murang'a County
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Permits & Licensing
+              </p>
+            </div>
+          </Link>
+          <div className="flex items-center gap-4">
+            <nav className="hidden md:flex items-center gap-6">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="text-sm font-medium hover:text-primary transition-colors"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="relative h-10 w-10 rounded-full"
+                >
+                  <Avatar className="h-10 w-10">
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      {user?.name?.charAt(0).toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <div className="flex flex-col space-y-1 p-2">
+                  <p className="text-sm font-medium leading-none">
+                    {user?.name}
+                  </p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    {user?.email}
+                  </p>
+                  <p className="text-xs leading-none text-muted-foreground capitalize">
+                    {user?.role}
+                  </p>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <User className="mr-2 h-4 w-4" />
+                  Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Settings className="mr-2 h-4 w-4" />
+                  Settings
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
