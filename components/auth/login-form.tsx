@@ -1,16 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "../button";
+import { Button } from "../ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../card";
-import { Input } from "../input";
-import { Label } from "../label";
+} from "../ui/card";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 
 export default function LoginForm() {
   return (
