@@ -2,6 +2,7 @@
 
 // The form validation will be through zod
 import z, { email } from "zod";
+import { createUser, authenticateUser } from "@/lib/auth";
 
 //define zod schema for signin validation
 const signInScheme = z.object({
@@ -38,18 +39,19 @@ export type ActionResponse = {
   error?: string;
 };
 
-// signin server action
-export async function signIn(formData: FormData): Promise<ActionResponse> {
+// signup server action
+export async function signUp(formData: FormData): Promise<ActionResponse> {
   try {
-    // extract data from form
     const data = {
+      fullName: formData.get("fullName") as string,
+      account_type: formData.get("accountType") as string,
       email: formData.get("email") as string,
       password: formData.get("password") as string,
       confirmPassword: formData.get("confirmPassword") as string,
     };
-    // validate data with zod
-    const validationResult = signInScheme.safeParse(data);
-    // check if validation passed
+
+    const validationResult = SignUpSchema.safeParse(data);
+
     if (!validationResult.success) {
       return {
         success: false,
@@ -57,6 +59,69 @@ export async function signIn(formData: FormData): Promise<ActionResponse> {
         errors: validationResult.error.flatten().fieldErrors,
       };
     }
+
+    const [firstName, ...lastNameParts] = data.fullName.split(" ");
+    const lastName = lastNameParts.join(" ") || "";
+    const role = data.account_type === "citizen" ? "CITIZEN" : "OFFICER";
+
+    const user = await createUser(
+      data.email,
+      data.password,
+      firstName,
+      lastName,
+      role
+    );
+
+    if (!user) {
+      return {
+        success: false,
+        message: "Failed to create user account",
+      };
+    }
+
+    return {
+      success: true,
+      message: "Account created successfully",
+    };
+  } catch (error) {
+    console.log("Sign up error", error);
+    return {
+      success: false,
+      message: "An error occurred during sign up",
+      error: "Failed to sign up user",
+    };
+  }
+}
+
+// signin server action
+export async function signIn(formData: FormData): Promise<ActionResponse> {
+  try {
+    const data = {
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
+    };
+
+    const validationResult = signInScheme.safeParse(data);
+
+    if (!validationResult.success) {
+      return {
+        success: false,
+        message: "Validation failed",
+        errors: validationResult.error.flatten().fieldErrors,
+      };
+    }
+
+    const user = await authenticateUser(data.email, data.password);
+
+    if (!user) {
+      return {
+        success: false,
+        message: "Invalid email or password",
+      };
+    }
+
+    // Create session
+    await createSession(user.id);
 
     return {
       success: true,
@@ -68,43 +133,6 @@ export async function signIn(formData: FormData): Promise<ActionResponse> {
       success: false,
       message: "An error occurred during sign in",
       error: "Failed to sign in user",
-    };
-  }
-}
-
-// signup server action
-export async function signUp(formData: FormData): Promise<ActionResponse> {
-  try {
-    // extract data from form
-    const data = {
-      fullName: formData.get("fullName") as string,
-      account_type: formData.get("accountType") as string,
-      email: formData.get("email") as string,
-      password: formData.get("password") as string,
-      confirmPassword: formData.get("confirmPassword") as string,
-    };
-
-    // validate data with zod
-    const validationResult = SignUpSchema.safeParse(data);
-
-    // check if validation passed
-    if (!validationResult.success) {
-      return {
-        success: false,
-        message: "Validation failed",
-        errors: validationResult.error.flatten().fieldErrors,
-      };
-    }
-    return {
-      success: true,
-      message: "Account created successfully",
-    };
-  } catch (error) {
-    console.log("Sign up error", error);
-    return {
-      success: false,
-      message: "An error occurred during sign up",
-      error: "Failed to sign up user",
     };
   }
 }

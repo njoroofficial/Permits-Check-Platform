@@ -40,4 +40,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Keeping the generated Prisma Client + query engine out of version control
 /lib/generated/prisma

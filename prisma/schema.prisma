@@ -14,3 +14,187 @@ datasource db {
   url      = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
+
+enum UserRole {
+  CITIZEN
+  OFFICER
+}
+
+enum ApplicationStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  PAYMENT_PENDING
+  COMPLETED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  MPESA
+  CARD
+  BANK_TRANSFER
+}
+
+enum DocumentType {
+  ID_COPY
+  BUSINESS_CERTIFICATE
+  TAX_CERTIFICATE
+  LOCATION_MAP
+  BUILDING_PLAN
+  ENVIRONMENTAL_IMPACT
+  OTHER
+}
+
+// CREATING USER MODEL
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  password    String
+  firstName   String
+  lastName    String
+  phoneNumber String?
+  idNumber    String?  @unique
+  role        UserRole @default(CITIZEN)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  applications Application[]
+  payments     Payment[]
+  statusUpdates ApplicationStatusHistory[]
+  assignedApplications Application[] @relation("AssignedApplications")
+
+  @@map("users")
+}
+
+// creating permit type model
+model PermitType {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  description String?
+  fee         Decimal @db.Decimal(10, 2)
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  applications Application[]
+
+  @@map("permit_types")
+}
+
+// creating application model
+model Application {
+  id                String            @id @default(cuid())
+  applicationNumber String            @unique
+  status            ApplicationStatus @default(DRAFT)
+  
+  // Applicant Information
+  userId            String
+  user              User              @relation(fields: [userId], references: [id])
+  
+  // Permit Information
+  permitTypeId      String
+  permitType        PermitType        @relation(fields: [permitTypeId], references: [id])
+  
+  // Business/Application Details
+  businessName      String?
+  businessType      String?
+  businessAddress   String?
+  businessPhone     String?
+  businessEmail     String?
+  
+  // Additional Details (JSON for flexibility)
+  additionalDetails Json?
+  
+  // Officer Assignment
+  assignedOfficerId String?
+  assignedOfficer   User?             @relation("AssignedApplications", fields: [assignedOfficerId], references: [id])
+  
+  // Timestamps
+  submittedAt       DateTime?
+  reviewedAt        DateTime?
+  completedAt       DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  // Relations
+  documents         Document[]
+  payments          Payment[]
+  statusHistory     ApplicationStatusHistory[]
+
+  @@map("applications")
+}
+
+// document model
+model Document {
+  id            String       @id @default(cuid())
+  fileName      String
+  originalName  String
+  fileSize      Int
+  mimeType      String
+  documentType  DocumentType
+  fileUrl       String
+  
+  // Relations
+  applicationId String
+  application   Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@map("documents")
+}
+
+// payment model
+model Payment {
+  id              String        @id @default(cuid())
+  amount          Decimal       @db.Decimal(10, 2)
+  paymentMethod   PaymentMethod
+  status          PaymentStatus @default(PENDING)
+  transactionId   String?       @unique
+  mpesaCode       String?
+  
+  // Relations
+  applicationId   String
+  application     Application   @relation(fields: [applicationId], references: [id])
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+  
+  // Payment Details
+  phoneNumber     String?
+  paymentDate     DateTime?
+  failureReason   String?
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("payments")
+}
+
+// application history model
+model ApplicationStatusHistory {
+  id            String            @id @default(cuid())
+  status        ApplicationStatus
+  comment       String?
+  
+  // Relations
+  applicationId String
+  application   Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  updatedById   String
+  updatedBy     User              @relation(fields: [updatedById], references: [id])
+  
+  createdAt     DateTime          @default(now())
+
+  @@map("application_status_history")
+}

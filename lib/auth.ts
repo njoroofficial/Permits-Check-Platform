@@ -1,10 +1,11 @@
 import { compare, hash } from "bcryptjs";
-// import { nanoid } from "nanoid";
+import { nanoid } from "nanoid";
 import { cookies } from "next/headers";
-// import { db } from "@/db";
+
 // import { users } from "@/db/schema";
 import * as jose from "jose";
 import { cache } from "react";
+import { db } from "./db";
 
 // JWT types
 interface JWTPayload {
@@ -34,24 +35,56 @@ export async function verifyPassword(password: string, hashedPassword: string) {
 }
 
 // Create a new user
+export async function createUser(
+  email: string,
+  password: string,
+  firstName: string,
+  lastName: string,
+  role: "CITIZEN" | "OFFICER"
+) {
+  const hashedPassword = await hashPassword(password);
 
-// export async function createUser(email: string, password: string) {
-//   const hashedPassword = await hashPassword(password);
-//   const id = nanoid();
+  try {
+    const user = await db.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        firstName,
+        lastName,
+        role,
+      },
+    });
 
-//   try {
-//     await db.insert(users).values({
-//       id,
-//       email,
-//       password: hashedPassword,
-//     });
+    return { id: user.id, email: user.email };
+  } catch (error) {
+    console.error("Error creating user:", error);
+    return null;
+  }
+}
 
-//     return { id, email };
-//   } catch (error) {
-//     console.error("Error creating user:", error);
-//     return null;
-//   }
-// }
+// Authenticate user
+export async function authenticateUser(email: string, password: string) {
+  try {
+    const user = await db.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) return null;
+
+    const isValid = await verifyPassword(password, user.password);
+    if (!isValid) return null;
+
+    return {
+      id: user.id,
+      email: user.email,
+      name: `${user.firstName} ${user.lastName}`,
+      role: user.role.toLowerCase() as "citizen" | "officer",
+    };
+  } catch (error) {
+    console.error("Authentication error:", error);
+    return null;
+  }
+}
 
 // Generate a JWT token
 export async function generateJWT(payload: JWTPayload) {
