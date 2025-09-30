@@ -118,9 +118,9 @@ export default function SignupForm() {
             <Label htmlFor="role">Account Type</Label>
 
             <Select
-              name="account_type"
+              name="accountType"
               disabled={isPending}
-              aria-describedby="account_type-error"
+              aria-describedby="accountType-error"
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select account type" />
@@ -132,7 +132,7 @@ export default function SignupForm() {
             </Select>
             {/* display account type error */}
             {state?.errors?.account_type && (
-              <p id="account_type-error" className="text-sm text-red-500">
+              <p id="accountType-error" className="text-sm text-red-500">
                 {state.errors.account_type[0]}
               </p>
             )}

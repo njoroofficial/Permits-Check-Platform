@@ -1,8 +1,11 @@
 "use server";
 
+import { supabase } from "@/lib/supabase";
 // The form validation will be through zod
-import z, { email } from "zod";
-import { createUser, authenticateUser } from "@/lib/auth";
+import z from "zod";
+import { createUser, createSession, verifyPassword } from "@/lib/auth";
+import { SupabaseAuthUser } from "@/lib/auth";
+import { getUserByEmail } from "@/lib/dal";
 
 //define zod schema for signin validation
 const signInScheme = z.object({
@@ -14,11 +17,7 @@ const signInScheme = z.object({
 const SignUpSchema = z
   .object({
     fullName: z.string().min(1, "Full name is required"),
-    accountType: z
-      .string()
-      .refine((val) => val === "Citizen" || val === "County Officer", {
-        message: "Account type must be either 'citizen' or 'officer'",
-      }),
+    accountType: z.string().min(1, "Account type is required"),
     email: z.string().min(1, "Email is required").email("Invalid email format"),
     password: z.string().min(6, "Password must be at least 6 characters"),
     confirmPassword: z.string().min(1, "Please confirm your password"),
@@ -50,6 +49,7 @@ export async function signUp(formData: FormData): Promise<ActionResponse> {
       confirmPassword: formData.get("confirmPassword") as string,
     };
 
+    // validation with zod
     const validationResult = SignUpSchema.safeParse(data);
 
     if (!validationResult.success) {
@@ -60,10 +60,21 @@ export async function signUp(formData: FormData): Promise<ActionResponse> {
       };
     }
 
+    // 1. Create user in Supabase Auth
+    const supabaseAuthUser = await SupabaseAuthUser(data.email, data.password);
+    if (!supabaseAuthUser) {
+      return {
+        success: false,
+        message: "Failed to create supabaseAuthUser user",
+        error: "Failed to create supabaseAuthUser user",
+      };
+    }
+
     const [firstName, ...lastNameParts] = data.fullName.split(" ");
     const lastName = lastNameParts.join(" ") || "";
     const role = data.account_type === "citizen" ? "CITIZEN" : "OFFICER";
 
+    // 2. Create user in your database
     const user = await createUser(
       data.email,
       data.password,
@@ -76,8 +87,12 @@ export async function signUp(formData: FormData): Promise<ActionResponse> {
       return {
         success: false,
         message: "Failed to create user account",
+        error: "Failed to create user account",
       };
     }
+
+    // Create session for our application
+    await createSession(supabaseAuthUser.id);
 
     return {
       success: true,
@@ -101,6 +116,7 @@ export async function signIn(formData: FormData): Promise<ActionResponse> {
       password: formData.get("password") as string,
     };
 
+    // validate with zod
     const validationResult = signInScheme.safeParse(data);
 
     if (!validationResult.success) {
@@ -111,16 +127,31 @@ export async function signIn(formData: FormData): Promise<ActionResponse> {
       };
     }
 
-    const user = await authenticateUser(data.email, data.password);
-
+    // find user by email
+    const user = await getUserByEmail(data.email);
     if (!user) {
       return {
         success: false,
         message: "Invalid email or password",
+        errors: {
+          email: ["Invalid email or password"],
+        },
       };
     }
 
-    // Create session
+    // Verify password
+    const isPasswordValid = await verifyPassword(data.password, user.password);
+    if (!isPasswordValid) {
+      return {
+        success: false,
+        message: "Invalid email or password",
+        errors: {
+          password: ["Invalid email or password"],
+        },
+      };
+    }
+
+    // Create session for our application
     await createSession(user.id);
 
     return {

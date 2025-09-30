@@ -1,11 +1,9 @@
 import { compare, hash } from "bcryptjs";
 import { nanoid } from "nanoid";
 import { cookies } from "next/headers";
-
-// import { users } from "@/db/schema";
 import * as jose from "jose";
 import { cache } from "react";
-import { db } from "./db";
+import { PrismaClient } from "@prisma/client";
 
 // JWT types
 interface JWTPayload {
@@ -34,6 +32,29 @@ export async function verifyPassword(password: string, hashedPassword: string) {
   return compare(password, hashedPassword);
 }
 
+// Create user in Supabase Auth
+export async function SupabaseAuthUser(email: string, password: string) {
+  const hashedPassword = await hashPassword(password);
+
+  const id = nanoid();
+  const prisma = new PrismaClient();
+
+  try {
+    await prisma.supabaseAuth.create({
+      data: {
+        id,
+        email,
+        password: hashedPassword,
+      },
+    });
+
+    return { id, email };
+  } catch (error) {
+    console.error("Error creating user:", error);
+    return null;
+  }
+}
+
 // Create a new user
 export async function createUser(
   email: string,
@@ -43,9 +64,10 @@ export async function createUser(
   role: "CITIZEN" | "OFFICER"
 ) {
   const hashedPassword = await hashPassword(password);
+  const prisma = new PrismaClient();
 
   try {
-    const user = await db.user.create({
+    const user = await prisma.User.create({
       data: {
         email,
         password: hashedPassword,
@@ -64,8 +86,9 @@ export async function createUser(
 
 // Authenticate user
 export async function authenticateUser(email: string, password: string) {
+  const prisma = new PrismaClient();
   try {
-    const user = await db.user.findUnique({
+    const user = await prisma.supabaseAuth.findUnique({
       where: { email },
     });
 

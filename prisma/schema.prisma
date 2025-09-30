@@ -53,6 +53,22 @@ enum DocumentType {
   OTHER
 }
 
+// supabase auth model
+model SupabaseAuth {
+  id            String   @id // Matches Supabase auth.users.id (UUID)
+  userId        String   @unique // Reference to your User model
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email         String   @unique // Duplicate of auth.users.email for easier queries
+  provider      String   @default("email") // "email"
+  password      String
+  lastSignIn    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("supabase_auth")
+}
+
+
 // CREATING USER MODEL
 
 model User {
@@ -73,9 +89,12 @@ model User {
   payments     Payment[]
   statusUpdates ApplicationStatusHistory[]
   assignedApplications Application[] @relation("AssignedApplications")
+  supabaseAuth SupabaseAuth?
 
   @@map("users")
 }
+
+
 
 // creating permit type model
 model PermitType {
