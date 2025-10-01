@@ -59,17 +59,17 @@ export async function signUp(formData: FormData): Promise<ActionResponse> {
       };
     }
 
-    // // Check if user already exists
-    // const existingUser = await getUserByEmail(data.email);
-    // if (existingUser) {
-    //   return {
-    //     success: false,
-    //     message: "User with this email already exists",
-    //     errors: {
-    //       email: ["User with this email already exists"],
-    //     },
-    //   };
-    // }
+    // Check if user already exists
+    const existingUser = await getUserByEmail(data.email);
+    if (existingUser) {
+      return {
+        success: false,
+        message: "User with this email already exists",
+        errors: {
+          email: ["User with this email already exists"],
+        },
+      };
+    }
 
     const [firstName, ...lastNameParts] = data.fullName.split(" ");
     const lastName = lastNameParts.join(" ") || "";
