@@ -9,7 +9,7 @@ export const getCurrentUser = async () => {
 
   try {
     // Get user from database using the session
-    const result = await prisma.supabaseAuth.findUnique({
+    const result = await prisma.supabaseAuth.findFirst({
       where: { id: session.userId },
     });
 
@@ -29,7 +29,7 @@ export const getUserByEmail = async (email: string) => {
 
   try {
     // Check if the user with provided email exists in the database
-    const result = await prisma.supabaseAuth.findUnique({
+    const result = await prisma.supabaseAuth.findFirst({
       where: { email },
     });
 

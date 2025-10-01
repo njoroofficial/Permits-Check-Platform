@@ -3,8 +3,7 @@
 import { supabase } from "@/lib/supabase";
 // The form validation will be through zod
 import z from "zod";
-import { createUser, createSession, verifyPassword } from "@/lib/auth";
-import { SupabaseAuthUser } from "@/lib/auth";
+import { createSession, verifyPassword, createUserWithAuth } from "@/lib/auth";
 import { getUserByEmail } from "@/lib/dal";
 
 //define zod schema for signin validation
@@ -17,7 +16,7 @@ const signInScheme = z.object({
 const SignUpSchema = z
   .object({
     fullName: z.string().min(1, "Full name is required"),
-    accountType: z.string().min(1, "Account type is required"),
+    accountType: z.string().optional(),
     email: z.string().min(1, "Email is required").email("Invalid email format"),
     password: z.string().min(6, "Password must be at least 6 characters"),
     confirmPassword: z.string().min(1, "Please confirm your password"),
@@ -60,22 +59,24 @@ export async function signUp(formData: FormData): Promise<ActionResponse> {
       };
     }
 
-    // 1. Create user in Supabase Auth
-    const supabaseAuthUser = await SupabaseAuthUser(data.email, data.password);
-    if (!supabaseAuthUser) {
-      return {
-        success: false,
-        message: "Failed to create supabaseAuthUser user",
-        error: "Failed to create supabaseAuthUser user",
-      };
-    }
+    // // Check if user already exists
+    // const existingUser = await getUserByEmail(data.email);
+    // if (existingUser) {
+    //   return {
+    //     success: false,
+    //     message: "User with this email already exists",
+    //     errors: {
+    //       email: ["User with this email already exists"],
+    //     },
+    //   };
+    // }
 
     const [firstName, ...lastNameParts] = data.fullName.split(" ");
     const lastName = lastNameParts.join(" ") || "";
-    const role = data.account_type === "citizen" ? "CITIZEN" : "OFFICER";
+    const role = data.account_type === "officer" ? "OFFICER" : "CITIZEN";
 
-    // 2. Create user in your database
-    const user = await createUser(
+    // Create user in your database
+    const result = await createUserWithAuth(
       data.email,
       data.password,
       firstName,
@@ -83,7 +84,7 @@ export async function signUp(formData: FormData): Promise<ActionResponse> {
       role
     );
 
-    if (!user) {
+    if (!result) {
       return {
         success: false,
         message: "Failed to create user account",
@@ -92,7 +93,7 @@ export async function signUp(formData: FormData): Promise<ActionResponse> {
     }
 
     // Create session for our application
-    await createSession(supabaseAuthUser.id);
+    await createSession(result.userId);
 
     return {
       success: true,
@@ -128,8 +129,8 @@ export async function signIn(formData: FormData): Promise<ActionResponse> {
     }
 
     // find user by email
-    const user = await getUserByEmail(data.email);
-    if (!user) {
+    const auth = await getUserByEmail(data.email);
+    if (!auth) {
       return {
         success: false,
         message: "Invalid email or password",
@@ -140,7 +141,7 @@ export async function signIn(formData: FormData): Promise<ActionResponse> {
     }
 
     // Verify password
-    const isPasswordValid = await verifyPassword(data.password, user.password);
+    const isPasswordValid = await verifyPassword(data.password, auth.password);
     if (!isPasswordValid) {
       return {
         success: false,
@@ -152,7 +153,7 @@ export async function signIn(formData: FormData): Promise<ActionResponse> {
     }
 
     // Create session for our application
-    await createSession(user.id);
+    await createSession(auth.userId);
 
     return {
       success: true,

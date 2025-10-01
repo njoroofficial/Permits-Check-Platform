@@ -3,7 +3,7 @@ import { nanoid } from "nanoid";
 import { cookies } from "next/headers";
 import * as jose from "jose";
 import { cache } from "react";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "./db";
 
 // JWT types
 interface JWTPayload {
@@ -32,31 +32,8 @@ export async function verifyPassword(password: string, hashedPassword: string) {
   return compare(password, hashedPassword);
 }
 
-// Create user in Supabase Auth
-export async function SupabaseAuthUser(email: string, password: string) {
-  const hashedPassword = await hashPassword(password);
-
-  const id = nanoid();
-  const prisma = new PrismaClient();
-
-  try {
-    await prisma.supabaseAuth.create({
-      data: {
-        id,
-        email,
-        password: hashedPassword,
-      },
-    });
-
-    return { id, email };
-  } catch (error) {
-    console.error("Error creating user:", error);
-    return null;
-  }
-}
-
 // Create a new user
-export async function createUser(
+export async function createUserWithAuth(
   email: string,
   password: string,
   firstName: string,
@@ -64,10 +41,10 @@ export async function createUser(
   role: "CITIZEN" | "OFFICER"
 ) {
   const hashedPassword = await hashPassword(password);
-  const prisma = new PrismaClient();
 
   try {
-    const user = await prisma.User.create({
+    // Creating user
+    const newUser = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
@@ -77,31 +54,50 @@ export async function createUser(
       },
     });
 
-    return { id: user.id, email: user.email };
-  } catch (error) {
-    console.error("Error creating user:", error);
+    // Creating the SupabaseAuth with reference to the user
+    const auth = await prisma.supabaseAuth.create({
+      data: {
+        id: nanoid(), // Generate a unique ID
+        email,
+        password: hashedPassword,
+        userId: newUser.id,
+      },
+    });
+
+    console.log("User and Auth created successfully");
+    return { userId: newUser.id, authId: auth.id, email };
+  } catch (error: any) {
+    // Better error handling
+    if (error.code === "P2002") {
+      console.error("Email already exists:", error.meta?.target);
+    } else {
+      console.error("Error creating user with auth:", error);
+    }
     return null;
   }
 }
 
-// Authenticate user
+// authenticateUser
+
 export async function authenticateUser(email: string, password: string) {
-  const prisma = new PrismaClient();
   try {
-    const user = await prisma.supabaseAuth.findUnique({
+    // Get the auth record with the related user
+    const auth = await prisma.supabaseAuth.findUnique({
       where: { email },
+      include: { user: true },
     });
 
-    if (!user) return null;
+    if (!auth || !auth.user) return null;
 
-    const isValid = await verifyPassword(password, user.password);
+    const isValid = await verifyPassword(password, auth.password);
     if (!isValid) return null;
 
     return {
-      id: user.id,
-      email: user.email,
-      name: `${user.firstName} ${user.lastName}`,
-      role: user.role.toLowerCase() as "citizen" | "officer",
+      id: auth.id,
+      userId: auth.userId,
+      email: auth.email,
+      name: `${auth.user.firstName} ${auth.user.lastName}`,
+      role: auth.user.role.toLowerCase() as "citizen" | "officer",
     };
   } catch (error) {
     console.error("Authentication error:", error);
