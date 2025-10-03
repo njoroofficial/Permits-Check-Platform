@@ -54,11 +54,7 @@ export function QuickActions() {
     const fetchPermits = async () => {
       try {
         const permitData = await getPermitTypes();
-        const normalized = (permitData as any[]).map((p) => ({
-          ...p,
-          fee: Number(p.fee),
-        }));
-        setServices(normalized);
+        setServices(permitData);
       } catch (error) {
         console.error("Failed to fetch permits data:", error);
       } finally {

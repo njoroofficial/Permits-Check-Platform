@@ -56,7 +56,11 @@ export const getUserByEmail = async (email: string) => {
 // get permits types
 export const getPermitTypes = async () => {
   try {
-    const result = await prisma.permitType.findMany();
+    const result = await prisma.permitType.findMany({
+      where: {
+        isActive: true,
+      },
+    });
 
     return result;
   } catch (error) {
