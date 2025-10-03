@@ -7,9 +7,18 @@ export const getCurrentUser = async () => {
 
   if (!session) return null;
 
+  // Skip database query during prerendering if we don't have a session
+
+  if (
+    typeof window === "undefined" &&
+    process.env.NEXT_PHASE === "phase-production-build"
+  ) {
+    return null;
+  }
+
   try {
     // Get user from database using the session
-    const result = await prisma.supabaseAuth.findFirst({
+    const result = await prisma.user.findFirst({
       where: { id: session.userId },
     });
 
@@ -41,5 +50,17 @@ export const getUserByEmail = async (email: string) => {
   } catch (error) {
     console.error("Error fetching user by email:", error);
     return null;
+  }
+};
+
+// get permits types
+export const getPermitTypes = async () => {
+  try {
+    const result = await prisma.permitType.findMany();
+
+    return result;
+  } catch (error) {
+    console.log("Error fetching Permit Types");
+    throw new Error("Failed to fetch permit Types");
   }
 };

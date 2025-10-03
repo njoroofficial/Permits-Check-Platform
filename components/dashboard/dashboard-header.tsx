@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -8,25 +10,59 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Shield, LogOut, User, Settings } from "lucide-react";
-import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { signOut } from "@/app/actions/auth";
+import { getCurrentUser } from "@/app/actions/user";
+import { useEffect, useState } from "react";
+
+type UserRole = "CITIZEN" | "OFFICER";
+
+type CurrentUser = {
+  role: UserRole;
+  id: string;
+  email: string;
+  password: string;
+  createdAt: Date;
+  updatedAt: Date;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string | null;
+  idNumber: string | null;
+  isActive: boolean;
+};
 
 export function DashboardHeader() {
-  const { user, logout } = useAuth();
   const router = useRouter();
+  const [user, setUser] = useState<CurrentUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch the current user data when component mounts
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userData = await getCurrentUser();
+        setUser(userData);
+      } catch (error) {
+        console.error("Failed to fetch user data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   //   handle user logout
-  const handleLogout = () => {
-    logout();
-    router.push("/");
+  const handleLogout = async () => {
+    await signOut();
   };
 
   //   dashboard link based on user roles
   const dashboardLink =
-    user?.role === "officer" ? "/officer-dashboard" : "/dashboard";
+    user?.role === "OFFICER" ? "/officer-dashboard" : "/dashboard";
   const navItems =
-    user?.role === "officer"
+    user?.role === "OFFICER"
       ? [
           { href: "/officer-dashboard", label: "Dashboard" },
           {
@@ -78,7 +114,7 @@ export function DashboardHeader() {
                 >
                   <Avatar className="h-10 w-10">
                     <AvatarFallback className="bg-primary text-primary-foreground">
-                      {user?.name?.charAt(0).toUpperCase() || "U"}
+                      {user?.firstName?.charAt(0).toUpperCase() || "U"}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -86,7 +122,7 @@ export function DashboardHeader() {
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <div className="flex flex-col space-y-1 p-2">
                   <p className="text-sm font-medium leading-none">
-                    {user?.name}
+                    {user?.firstName}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
                     {user?.email}

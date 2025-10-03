@@ -1,3 +1,5 @@
+"use server";
+
 import { compare, hash } from "bcryptjs";
 import { nanoid } from "nanoid";
 import { cookies } from "next/headers";

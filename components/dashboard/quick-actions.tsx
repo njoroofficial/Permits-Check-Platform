@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Card,
   CardContent,
@@ -6,40 +8,65 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, CheckCircle, Building, Truck } from "lucide-react";
+import {
+  FileText,
+  CheckCircle,
+  Building,
+  Truck,
+  BottleWine,
+} from "lucide-react";
+import { getPermitTypes } from "@/app/actions/permits";
+import { useEffect, useState } from "react";
 
-const services = [
+const icons = [
   {
-    title: "Business License",
-    description: "Register your business",
-    icon: FileText,
-    fee: "KES 2,500",
-    href: "/apply/business-license",
+    iconType: "Business License",
+    iconName: FileText,
   },
   {
-    title: "Building Permit",
-    description: "Construction approval",
-    icon: Building,
-    fee: "KES 5,000",
-    href: "/apply/building-permit",
+    iconType: "Building Permit",
+    iconName: Building,
   },
   {
-    title: "Food Handler's Permit",
-    description: "Food service certification",
-    icon: CheckCircle,
-    fee: "KES 1,000",
-    href: "/apply/food-handlers",
+    iconType: "Food Handler's Permit",
+    iconName: CheckCircle,
   },
-  {
-    title: "Transport License",
-    description: "Commercial vehicle permit",
-    icon: Truck,
-    fee: "KES 3,000",
-    href: "/apply/transport-license",
-  },
+  { iconType: "Transport License", iconName: Truck },
+  { iconType: "Liquor License", iconName: BottleWine },
 ];
 
+type PermitType = {
+  id: string;
+  name: string;
+  description: string | null;
+  fee: number;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export function QuickActions() {
+  const [services, setServices] = useState<PermitType[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // get permits types
+  useEffect(() => {
+    const fetchPermits = async () => {
+      try {
+        const permitData = await getPermitTypes();
+        const normalized = (permitData as any[]).map((p) => ({
+          ...p,
+          fee: Number(p.fee),
+        }));
+        setServices(normalized);
+      } catch (error) {
+        console.error("Failed to fetch permits data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchPermits();
+  }, []);
   return (
     <Card>
       <CardHeader>
@@ -57,10 +84,16 @@ export function QuickActions() {
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <service.icon className="w-5 h-5 text-primary" />
+                  {(() => {
+                    const icon = icons.find(
+                      (icon) => icon.iconType === service.name
+                    );
+                    const IconComponent = icon ? icon.iconName : FileText;
+                    return <IconComponent className="w-5 h-5 text-primary" />;
+                  })()}
                 </div>
                 <div>
-                  <h4 className="font-medium text-sm">{service.title}</h4>
+                  <h4 className="font-medium text-sm">{service.name}</h4>
                   <p className="text-xs text-muted-foreground">
                     {service.description}
                   </p>
