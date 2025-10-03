@@ -1,3 +1,12 @@
-export default function DashboardPage() {
-  return <h1>Hello From Dashboard Page</h1>;
+"use server";
+
+import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+
+export default async function DashboardPage() {
+  return (
+    <div className="min-g-screen bg-background">
+      {/* the dashboard header */}
+      <DashboardHeader />
+    </div>
+  );
 }

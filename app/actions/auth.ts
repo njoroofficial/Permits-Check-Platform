@@ -3,8 +3,14 @@
 import { supabase } from "@/lib/supabase";
 // The form validation will be through zod
 import z from "zod";
-import { createSession, verifyPassword, createUserWithAuth } from "@/lib/auth";
+import {
+  createSession,
+  verifyPassword,
+  createUserWithAuth,
+  deleteSession,
+} from "@/lib/auth";
 import { getUserByEmail } from "@/lib/dal";
+import { redirect } from "next/navigation";
 
 //define zod schema for signin validation
 const signInScheme = z.object({
@@ -166,5 +172,17 @@ export async function signIn(formData: FormData): Promise<ActionResponse> {
       message: "An error occurred during sign in",
       error: "Failed to sign in user",
     };
+  }
+}
+
+// sign out server action
+export async function signOut(): Promise<void> {
+  try {
+    await deleteSession();
+  } catch (error) {
+    console.error("Sign out error:", error);
+    throw new Error("Failed to sign out");
+  } finally {
+    redirect("/login");
   }
 }
