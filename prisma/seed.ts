@@ -57,6 +57,17 @@ async function main() {
         isActive: true,
       },
     }),
+    prisma.permitType.upsert({
+      where: { name: "Environmental Permit" },
+      update: {},
+      create: {
+        name: "Environmental Permit",
+        description:
+          "Environmental impact assessment and compliance certification for businesses",
+        fee: 7500.0,
+        isActive: true,
+      },
+    }),
   ]);
 
   console.log("✅ Database seeded successfully!");
