@@ -94,7 +94,7 @@ export function QuickActions() {
                     {service.description}
                   </p>
                   <p className="text-xs font-medium text-primary">
-                    {service.fee}
+                    KES {service.fee}
                   </p>
                 </div>
               </div>
