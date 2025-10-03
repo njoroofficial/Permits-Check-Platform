@@ -8,42 +8,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  FileText,
-  CheckCircle,
-  Building,
-  Truck,
-  BottleWine,
-} from "lucide-react";
 import { getPermitTypes } from "@/app/actions/permits";
 import { useEffect, useState } from "react";
-
-const icons = [
-  {
-    iconType: "Business License",
-    iconName: FileText,
-  },
-  {
-    iconType: "Building Permit",
-    iconName: Building,
-  },
-  {
-    iconType: "Food Handler's Permit",
-    iconName: CheckCircle,
-  },
-  { iconType: "Transport License", iconName: Truck },
-  { iconType: "Liquor License", iconName: BottleWine },
-];
-
-type PermitType = {
-  id: string;
-  name: string;
-  description: string | null;
-  fee: number;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-};
+import { PermitType } from "@/app/actions/permits";
+import { icons } from "@/lib/data";
+import { FileText } from "lucide-react";
 
 export function QuickActions() {
   const [services, setServices] = useState<PermitType[]>([]);

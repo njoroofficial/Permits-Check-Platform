@@ -2,6 +2,16 @@
 
 import { getPermitTypes as getPermit } from "@/lib/dal";
 
+export type PermitType = {
+  id: string;
+  name: string;
+  description: string | null;
+  fee: number;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 // get various permits
 export async function getPermitTypes() {
   try {
