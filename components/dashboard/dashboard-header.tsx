@@ -10,49 +10,30 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Shield, LogOut, User, Settings } from "lucide-react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signOut } from "@/app/actions/auth";
-import { getCurrentUser } from "@/app/actions/user";
-import { useEffect, useState } from "react";
+// import { getCurrentUser } from "@/app/actions/user";
+// import { useEffect, useState } from "react";
 
 type UserRole = "CITIZEN" | "OFFICER";
 
-type CurrentUser = {
-  role: UserRole;
-  id: string;
-  email: string;
-  password: string;
-  createdAt: Date;
-  updatedAt: Date;
-  firstName: string;
-  lastName: string;
-  phoneNumber: string | null;
-  idNumber: string | null;
-  isActive: boolean;
-};
+interface CurrentUser {
+  user: {
+    role: UserRole;
+    id: string;
+    email: string;
+    password: string;
+    createdAt: Date;
+    updatedAt: Date;
+    firstName: string;
+    lastName: string;
+    phoneNumber: string | null;
+    idNumber: string | null;
+    isActive: boolean;
+  };
+}
 
-export function DashboardHeader() {
-  const router = useRouter();
-  const [user, setUser] = useState<CurrentUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Fetch the current user data when component mounts
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const userData = await getCurrentUser();
-        setUser(userData);
-      } catch (error) {
-        console.error("Failed to fetch user data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUser();
-  }, []);
-
+export function DashboardHeader({ user }: CurrentUser) {
   //   handle user logout
   const handleLogout = async () => {
     await signOut();

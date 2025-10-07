@@ -1,5 +1,3 @@
-"use client";
-
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import {
   Card,
@@ -12,33 +10,22 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FileText } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { getPermitTypes } from "@/app/actions/permits";
-import { PermitType } from "@/app/actions/permits";
 import { icons } from "@/lib/data";
+import { getCurrentUser, getPermitTypes } from "@/lib/dal";
 
-export default function ApplyPage() {
-  const [services, setServices] = useState<PermitType[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // get permits types
-  useEffect(() => {
-    const fetchPermits = async () => {
-      try {
-        const permitData = await getPermitTypes();
-        setServices(permitData);
-      } catch (error) {
-        console.error("Failed to fetch permits data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchPermits();
-  }, []);
+export default async function ApplyPage() {
+  // get the various services offered (permitTypes the county has)
+  const services = await getPermitTypes();
+  const user = await getCurrentUser();
 
   return (
     <div className="min-h-screen bg-background">
-      <DashboardHeader />
+      {/* The dashboard header */}
+      {user ? (
+        <DashboardHeader user={user} />
+      ) : (
+        <div className="p-4 bg-muted">Loading user information...</div>
+      )}
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
@@ -78,7 +65,7 @@ export default function ApplyPage() {
                   <div className="flex justify-between text-sm">
                     <span className="font-medium">Application Fee:</span>
                     <span className="text-primary font-semibold">
-                      KES {service.fee}
+                      KES {service.fee.toString()}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">

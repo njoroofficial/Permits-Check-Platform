@@ -1,8 +1,9 @@
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
-import { getCurrentUser } from "../actions/user";
 import { RecentApplications } from "@/components/dashboard/recent-applications";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { QuickActions } from "@/components/dashboard/quick-actions";
+import { getCurrentUser } from "@/lib/dal";
+import { Suspense } from "react";
 
 // Mock data - handcoded data
 const mockStats = {
@@ -39,8 +40,12 @@ export default async function DashboardPage() {
   const user = await getCurrentUser();
   return (
     <div className="min-g-screen bg-background">
-      {/* the dashboard header */}
-      <DashboardHeader />
+      {/* The dashboard header */}
+      {user ? (
+        <DashboardHeader user={user} />
+      ) : (
+        <div className="p-4 bg-muted">Loading user information...</div>
+      )}
 
       <main className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
@@ -61,7 +66,9 @@ export default async function DashboardPage() {
         {/* Main Content Grid */}
         <div className="grid gap-8 lg:grid-cols-2">
           <RecentApplications applications={mockApplications} />
-          <QuickActions />
+          <Suspense fallback={<div>Loading...</div>}>
+            <QuickActions />
+          </Suspense>
         </div>
 
         {/* Additional Information */}

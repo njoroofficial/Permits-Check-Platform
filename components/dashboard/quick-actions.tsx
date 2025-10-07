@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Card,
   CardContent,
@@ -8,30 +6,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { getPermitTypes } from "@/app/actions/permits";
-import { useEffect, useState } from "react";
-import { PermitType } from "@/app/actions/permits";
 import { icons } from "@/lib/data";
 import { FileText } from "lucide-react";
+import { getPermitTypes } from "@/lib/dal";
 
-export function QuickActions() {
-  const [services, setServices] = useState<PermitType[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // get permits types
-  useEffect(() => {
-    const fetchPermits = async () => {
-      try {
-        const permitData = await getPermitTypes();
-        setServices(permitData);
-      } catch (error) {
-        console.error("Failed to fetch permits data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchPermits();
-  }, []);
+export async function QuickActions() {
+  // get the various services offered (permitTypes the county has)
+  const services = await getPermitTypes();
   return (
     <Card>
       <CardHeader>
@@ -63,7 +44,7 @@ export function QuickActions() {
                     {service.description}
                   </p>
                   <p className="text-xs font-medium text-primary">
-                    KES {service.fee}
+                    KES {service.fee.toString()}
                   </p>
                 </div>
               </div>
