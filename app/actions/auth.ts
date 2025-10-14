@@ -1,6 +1,5 @@
 "use server";
 
-import { supabase } from "@/lib/supabase";
 // The form validation will be through zod
 import z from "zod";
 import {
