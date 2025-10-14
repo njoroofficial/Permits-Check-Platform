@@ -75,7 +75,7 @@ export default async function ApplyPage() {
 
                   {service.isActive ? (
                     <Button className="w-full" asChild>
-                      <Link href="./business-license">Apply Now</Link>
+                      <Link href="/apply/business-license">Apply Now</Link>
                     </Button>
                   ) : (
                     <Button className="w-full" disabled>
