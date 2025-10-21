@@ -1,7 +1,10 @@
 "use server";
 
+import { getCurrentUser } from "@/lib/dal";
+import { prisma } from "@/lib/db";
 // The form validation will be through zod
 import { z } from "zod";
+import { fa } from "zod/v4/locales";
 
 //define zod schema for application form validation
 
@@ -34,3 +37,49 @@ export type ActionResponse = {
   errors?: Record<string, string[]>;
   error?: string;
 };
+
+// Initialize a business license application
+export async function createApplication(
+  applicationData: applicationFormSchema
+): Promise<ActionResponse> {
+  try {
+    // security check - ensure user is authenticated
+    const user = await getCurrentUser();
+    if (!user) {
+      return {
+        success: false,
+        message: "Unauthorized access",
+        error: "Unauthorized",
+      };
+    }
+
+    // validate with zod
+    const validationResult = applicationFormSchema.safeParse(applicationData);
+    if (!validationResult.success) {
+      return {
+        success: false,
+        message: "Validation failed",
+        errors: validationResult.error.flatten().fieldErrors,
+      };
+    }
+
+    // // create a business license application
+    // const validationData = validationResult.data;
+    // await prisma.application.create({
+    //   // I will pass the data to the database
+    //   data: {},
+    // });
+
+    return {
+      success: true,
+      message: "Business Application created successfully",
+    };
+  } catch (error) {
+    console.error("Error creating business application:", error);
+    return {
+      success: false,
+      message: "An error occurred while creating a business application",
+      error: "Failed to create a business application",
+    };
+  }
+}
