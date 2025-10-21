@@ -5,19 +5,18 @@ import { z } from "zod";
 
 //define zod schema for application form validation
 
+const industryTypes = [
+  "Retail",
+  "Restaurant/Food Service",
+  "Manufacturing",
+  "Professional Services",
+] as const;
+
 const applicationFormSchema = z.object({
   businessName: z.string().min(1, "Business Name is required"),
-  businessType: z.enum(
-    [
-      "Retail",
-      "Restaurant/Food Service",
-      "Manufacturing",
-      "Professional Services",
-    ],
-    {
-      errorMap: () => ({ message: "Please select a valid business type" }),
-    }
-  ),
+  businessType: z.enum(industryTypes, {
+    message: "Please select a valid business type",
+  }),
   phoneNumber: z
     .string()
     .regex(/^\+?[1-9]\d{1,14}$/, { message: "Invalid phone number" }),
