@@ -1,5 +1,6 @@
 import { getSession } from "./auth";
 import { prisma } from "./db";
+import { unstable_cacheTag as cacheTag } from "next/cache";
 
 // get current user
 export const getCurrentUser = async () => {
@@ -55,14 +56,20 @@ export const getUserByEmail = async (email: string) => {
 
 // get permits types
 export const getPermitTypes = async () => {
+  "use cache";
+  cacheTag("permitType");
   try {
-    const result = await prisma.permitType.findMany({
+    const results = await prisma.permitType.findMany({
       where: {
         isActive: true,
       },
     });
 
-    return result;
+    // Serialize Decimal to string before returning
+    return results.map((result) => ({
+      ...result,
+      fee: result.fee.toString(), // Convert Decimal to string
+    }));
   } catch (error) {
     console.log("Error fetching Permit Types");
     throw new Error("Failed to fetch permit Types");

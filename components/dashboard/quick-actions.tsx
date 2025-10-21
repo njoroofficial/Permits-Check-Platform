@@ -13,6 +13,7 @@ import { getPermitTypes } from "@/lib/dal";
 export async function QuickActions() {
   // get the various services offered (permitTypes the county has)
   const services = await getPermitTypes();
+
   return (
     <Card>
       <CardHeader>
@@ -44,7 +45,7 @@ export async function QuickActions() {
                     {service.description}
                   </p>
                   <p className="text-xs font-medium text-primary">
-                    KES {service.fee.toString()}
+                    KES {service.fee}
                   </p>
                 </div>
               </div>
