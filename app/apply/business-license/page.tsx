@@ -54,7 +54,7 @@ export default function BusinessLicenseApplicationPage() {
         "Application submitted successfully! You will receive a confirmation email shortly."
       );
       router.push("/dashboard");
-    }, 1000);
+    }, 2000);
   };
 
   return (
