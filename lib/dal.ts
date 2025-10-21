@@ -1,9 +1,11 @@
 import { getSession } from "./auth";
 import { prisma } from "./db";
 import { unstable_cacheTag as cacheTag } from "next/cache";
+import { cache } from "react";
 
 // get current user
-export const getCurrentUser = async () => {
+export const getCurrentUser = cache(async () => {
+  console.log("getting user");
   const session = await getSession();
 
   if (!session) return null;
@@ -28,7 +30,7 @@ export const getCurrentUser = async () => {
     console.error("Error fetching current user:", error);
     return null;
   }
-};
+});
 
 // get user by email
 export const getUserByEmail = async (email: string) => {

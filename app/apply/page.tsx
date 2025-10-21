@@ -65,7 +65,7 @@ export default async function ApplyPage() {
                   <div className="flex justify-between text-sm">
                     <span className="font-medium">Application Fee:</span>
                     <span className="text-primary font-semibold">
-                      KES {service.fee.toString()}
+                      KES {service.fee}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
