@@ -47,13 +47,9 @@ export function BusinessLicenseForm({ onSubmit }: BusinessLicenseFormProps) {
   const [formData, setFormData] = useState({
     businessName: "",
     businessType: "",
-    ownerName: "",
     idNumber: "",
     phoneNumber: "",
-    email: "",
     physicalAddress: "",
-    businessDescription: "",
-    expectedEmployees: "",
   });
   const [documents, setDocuments] = useState<any[]>([]);
 
@@ -91,10 +87,7 @@ export function BusinessLicenseForm({ onSubmit }: BusinessLicenseFormProps) {
     switch (currentStep) {
       case 0:
         return (
-          formData.businessName &&
-          formData.businessType &&
-          formData.ownerName &&
-          formData.idNumber
+          formData.businessName && formData.businessType && formData.idNumber
         );
       case 1:
         return documents.length === requiredDocuments.length;
@@ -172,17 +165,17 @@ export function BusinessLicenseForm({ onSubmit }: BusinessLicenseFormProps) {
 
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="ownerName">Owner Full Name *</Label>
+                <Label htmlFor="phoneNumber">Phone Number</Label>
                 <Input
-                  id="ownerName"
-                  value={formData.ownerName}
+                  id="phoneNumber"
+                  value={formData.phoneNumber}
                   onChange={(e) =>
                     setFormData((prev) => ({
                       ...prev,
-                      ownerName: e.target.value,
+                      phoneNumber: e.target.value,
                     }))
                   }
-                  placeholder="Enter owner name"
+                  placeholder="+254 700 000 000"
                 />
               </div>
               <div className="space-y-2">
@@ -201,35 +194,6 @@ export function BusinessLicenseForm({ onSubmit }: BusinessLicenseFormProps) {
               </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="phoneNumber">Phone Number</Label>
-                <Input
-                  id="phoneNumber"
-                  value={formData.phoneNumber}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      phoneNumber: e.target.value,
-                    }))
-                  }
-                  placeholder="+254 700 000 000"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, email: e.target.value }))
-                  }
-                  placeholder="your.email@example.com"
-                />
-              </div>
-            </div>
-
             <div className="space-y-2">
               <Label htmlFor="physicalAddress">Business Physical Address</Label>
               <Textarea
@@ -243,43 +207,6 @@ export function BusinessLicenseForm({ onSubmit }: BusinessLicenseFormProps) {
                 }
                 placeholder="Enter complete physical address"
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="businessDescription">Business Description</Label>
-              <Textarea
-                id="businessDescription"
-                value={formData.businessDescription}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    businessDescription: e.target.value,
-                  }))
-                }
-                placeholder="Describe your business activities"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="expectedEmployees">
-                Expected Number of Employees
-              </Label>
-              <Select
-                value={formData.expectedEmployees}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, expectedEmployees: value }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select employee range" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1-5">1-5 employees</SelectItem>
-                  <SelectItem value="6-20">6-20 employees</SelectItem>
-                  <SelectItem value="21-50">21-50 employees</SelectItem>
-                  <SelectItem value="50+">50+ employees</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </CardContent>
         </Card>
@@ -310,17 +237,12 @@ export function BusinessLicenseForm({ onSubmit }: BusinessLicenseFormProps) {
                 <div>
                   <strong>Business Type:</strong> {formData.businessType}
                 </div>
-                <div>
-                  <strong>Owner Name:</strong> {formData.ownerName}
-                </div>
+
                 <div>
                   <strong>ID Number:</strong> {formData.idNumber}
                 </div>
                 <div>
                   <strong>Phone:</strong> {formData.phoneNumber}
-                </div>
-                <div>
-                  <strong>Email:</strong> {formData.email}
                 </div>
               </div>
             </div>

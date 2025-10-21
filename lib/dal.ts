@@ -5,7 +5,6 @@ import { cache } from "react";
 
 // get current user
 export const getCurrentUser = cache(async () => {
-  console.log("getting user");
   const session = await getSession();
 
   if (!session) return null;

@@ -130,11 +130,7 @@ model Application {
   businessName      String?
   businessType      String?
   businessAddress   String?
-  businessPhone     String?
-  businessEmail     String?
-  
-  // Additional Details (JSON for flexibility)
-  additionalDetails Json?
+
   
   // Officer Assignment
   assignedOfficerId String?
