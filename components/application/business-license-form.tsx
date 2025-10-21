@@ -23,6 +23,8 @@ import { ApplicationStepper } from "./application-stepper";
 import { DocumentUpload } from "./document-upload";
 import { Building } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useActionState } from "react";
+import { ActionResponse } from "@/app/actions/application";
 
 interface BusinessLicenseFormProps {
   onSubmit: (data: any) => void;
@@ -41,17 +43,44 @@ const requiredDocuments = [
   "Location Map/GPS Coordinates",
 ];
 
+const initialState: ActionResponse = {
+  success: false,
+  message: "",
+  errors: undefined,
+};
+
 export function BusinessLicenseForm({ onSubmit }: BusinessLicenseFormProps) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState({
-    businessName: "",
-    businessType: "",
-    idNumber: "",
-    phoneNumber: "",
-    physicalAddress: "",
-  });
-  const [documents, setDocuments] = useState<any[]>([]);
+  // const [formData, setFormData] = useState({
+  //   businessName: "",
+  //   businessType: "",
+  //   idNumber: "",
+  //   phoneNumber: "",
+  //   physicalAddress: "",
+  // });
+  // const [documents, setDocuments] = useState<any[]>([]);
+
+  // Use useActionState hook for the form submission action
+
+  const [state, formAction, isPending] = useActionState<
+    ActionResponse,
+    FormData
+  >(async (prevState: ActionResponse, formData: FormData) => {
+    // Extract data from the form
+
+    const applicationData = {
+      businessName: formData.get("businessName") as string,
+      businessType: formData.get("businessType") as
+        | "Retail"
+        | "Restaurant/Food Service"
+        | "Manufacturing"
+        | "Professional Services",
+      phoneNumber: formData.get("phoneNumber") as string,
+      nationalID: formData.get("idNumber"),
+      businessAddress: formData.get("physicalAddress") as string,
+    };
+  }, initialState);
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
@@ -121,93 +150,143 @@ export function BusinessLicenseForm({ onSubmit }: BusinessLicenseFormProps) {
               Provide details about your business
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="businessName">Business Name *</Label>
-                <Input
-                  id="businessName"
-                  value={formData.businessName}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      businessName: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter business name"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="businessType">Business Type *</Label>
-                <Select
-                  value={formData.businessType}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, businessType: value }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select business type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="retail">Retail</SelectItem>
-                    <SelectItem value="restaurant">
-                      Restaurant/Food Service
-                    </SelectItem>
-                    <SelectItem value="manufacturing">Manufacturing</SelectItem>
-                    <SelectItem value="services">
-                      Professional Services
-                    </SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+          <CardContent>
+            {/* Application form */}
 
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="phoneNumber">Phone Number</Label>
-                <Input
-                  id="phoneNumber"
-                  value={formData.phoneNumber}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      phoneNumber: e.target.value,
-                    }))
-                  }
-                  placeholder="+254 700 000 000"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="idNumber">National ID Number *</Label>
-                <Input
-                  id="idNumber"
-                  value={formData.idNumber}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      idNumber: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter ID number"
-                />
-              </div>
-            </div>
+            <form action={formAction} className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="businessName">Business Name *</Label>
+                  <Input
+                    id="businessName"
+                    name="businessName"
+                    type="text"
+                    placeholder="Enter business name"
+                    required
+                    disabled={isPending}
+                    aria-describedby="businessName-error"
+                    className={
+                      state?.errors?.businessName ? "border-red-500" : ""
+                    }
+                  />
 
-            <div className="space-y-2">
-              <Label htmlFor="physicalAddress">Business Physical Address</Label>
-              <Textarea
-                id="physicalAddress"
-                value={formData.physicalAddress}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    physicalAddress: e.target.value,
-                  }))
-                }
-                placeholder="Enter complete physical address"
-              />
-            </div>
+                  {/* display business name error */}
+
+                  {state?.errors?.businessName && (
+                    <p id="businessName-error" className="text-sm text-red-500">
+                      {state.errors.businessName[0]}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="businessType">Business Type *</Label>
+                  <Select
+                    name="businessType"
+                    disabled={isPending}
+                    aria-describedby="businessType-error"
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select business type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="retail">Retail</SelectItem>
+                      <SelectItem value="restaurant">
+                        Restaurant/Food Service
+                      </SelectItem>
+                      <SelectItem value="manufacturing">
+                        Manufacturing
+                      </SelectItem>
+                      <SelectItem value="services">
+                        Professional Services
+                      </SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+
+                    {/* display business type error */}
+
+                    {state?.errors?.businessType && (
+                      <p
+                        id="businessType-error"
+                        className="text-sm text-red-500"
+                      >
+                        {state.errors.businessType[0]}
+                      </p>
+                    )}
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="phoneNumber">Phone Number</Label>
+                  <Input
+                    id="phoneNumber"
+                    name="phoneNumber"
+                    type="text"
+                    placeholder="+254 700 000 000"
+                    required
+                    disabled={isPending}
+                    aria-describedby="phoneNumber-error"
+                    className={
+                      state?.errors?.phoneNumber ? "border-red-500" : ""
+                    }
+                  />
+
+                  {/* display phone number error */}
+
+                  {state?.errors?.phoneNumber && (
+                    <p id="phoneNumber-error" className="text-sm text-red-500">
+                      {state.errors.phoneNumber[0]}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="idNumber">National ID Number *</Label>
+                  <Input
+                    id="idNumber"
+                    name="idNumber"
+                    type="number"
+                    placeholder="Enter ID number"
+                    required
+                    disabled={isPending}
+                    aria-describedby="idNumber-error"
+                    className={state?.errors?.idNumber ? "border-red-500" : ""}
+                  />
+
+                  {/* display id number error */}
+
+                  {state?.errors?.idNumber && (
+                    <p id="idNumber-error" className="text-sm text-red-500">
+                      {state.errors.idNumber[0]}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="physicalAddress">
+                  Business Physical Address
+                </Label>
+                <Textarea
+                  id="physicalAddress"
+                  name="physicalAddress"
+                  placeholder="Enter complete physical address"
+                  required
+                  aria-describedby="physicalAddress-error"
+                  className={
+                    state?.errors?.physicalAddress ? "border-red-500" : ""
+                  }
+                />
+                {state?.errors?.physicalAddress && (
+                  <p
+                    id="physicalAddress-error"
+                    className="text-sm text-red-500"
+                  >
+                    {state.errors.physicalAddress[0]}
+                  </p>
+                )}
+              </div>
+            </form>
           </CardContent>
         </Card>
       )}

@@ -40,7 +40,7 @@ export type ActionResponse = {
 
 // Initialize a business license application
 export async function createApplication(
-  data: applicationFormSchema
+  applicationData: applicationFormSchema
 ): Promise<ActionResponse> {
   try {
     // security check - ensure user is authenticated
@@ -54,7 +54,7 @@ export async function createApplication(
     }
 
     // validate with zod
-    const validationResult = applicationFormSchema.safeParse(data);
+    const validationResult = applicationFormSchema.safeParse(applicationData);
     if (!validationResult.success) {
       return {
         success: false,
@@ -63,11 +63,12 @@ export async function createApplication(
       };
     }
 
-    // create a business license application
-    const validationData = validationResult.data;
-    await prisma.application.create({
-      data: validationData,
-    });
+    // // create a business license application
+    // const validationData = validationResult.data;
+    // await prisma.application.create({
+    //   // I will pass the data to the database
+    //   data: {},
+    // });
 
     return {
       success: true,
