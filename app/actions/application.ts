@@ -40,16 +40,6 @@ export interface FormState {
   documents?: any[];
 }
 
-// Initial state for the form
-export const initialFormState: FormState = {
-  success: false,
-  message: "",
-  errors: {},
-  applicationId: null,
-  formData: {},
-  documents: [],
-};
-
 // Initialize a business license application
 export async function submitBusinessLicense(
   prevState: FormState,

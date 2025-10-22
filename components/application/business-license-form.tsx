@@ -19,14 +19,11 @@ import {
 } from "@/components/ui/select";
 import { Building, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useActionState, useState } from "react";
-import {
-  type ActionResponse,
-  createApplication,
-} from "@/app/actions/application";
+import { useActionState, useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { ApplicationStepper } from "./application-stepper";
 import { DocumentUpload } from "./document-upload";
+import { FormState, submitBusinessLicense } from "@/app/actions/application";
 
 // Application steps
 const steps = [
@@ -43,83 +40,73 @@ const requiredDocuments = [
   "Location Map/GPS Coordinates",
 ];
 
-const initialState: ActionResponse = {
+interface BusinessLicenseFormProps {
+  onSubmit?: (data: any) => void;
+}
+
+// Initial state for the form
+const initialFormState: FormState = {
   success: false,
   message: "",
-  errors: undefined,
+  errors: {},
+  applicationId: null,
+  formData: {},
+  documents: [],
 };
 
-export function BusinessLicenseForm() {
+export function BusinessLicenseForm({ onSubmit }: BusinessLicenseFormProps) {
   const router = useRouter();
   // hook to handle form next state
   const [currentStep, setCurrentStep] = useState(0);
   // hook to set documents
   const [documents, setDocuments] = useState<any[]>([]);
 
-  // Generate application ID
-  const applicationId = `APP-${Date.now()}`;
+  // Using useActionState for form handling
+  const [state, formAction, isPending] = useActionState<FormState, FormData>(
+    submitBusinessLicense,
+    initialFormState
+  );
 
-  // Use useActionState hook for the form submission action
+  // Local form data state for multi-step navigation
+  const [formData, setFormData] = useState({
+    businessName: "",
+    businessType: "",
+    idNumber: "",
+    phoneNumber: "",
+    physicalAddress: "",
+  });
 
-  const [state, formAction, isPending] = useActionState<
-    ActionResponse,
-    FormData
-  >(async (prevState: ActionResponse, formData: FormData) => {
-    // Extract data from the form
-
-    const applicationData = {
-      businessName: formData.get("businessName") as string,
-      businessType: formData.get("businessType") as
-        | "Retail"
-        | "Restaurant/Food Service"
-        | "Manufacturing"
-        | "Professional Services",
-      phoneNumber: formData.get("phoneNumber") as string,
-      nationalID: Number(formData.get("idNumber")),
-      businessAddress: formData.get("physicalAddress") as string,
-    };
-
-    try {
-      // call the server action to initiate the application process
-      const result = await createApplication(applicationData);
-
-      // Handle successful submission
-
-      if (result.success) {
-        router.push(`/payment/${applicationId}`);
-      }
-
-      return result;
-    } catch (err) {
-      return {
-        success: false,
-        message: (err as Error).message || "An error occurred",
-        errors: undefined,
-      };
+  // Redirect to payment page on successful submission
+  useEffect(() => {
+    if (state.success && state.applicationId) {
+      router.push(`/payment/${state.applicationId}`);
     }
-  }, initialState);
+  }, [state.success, state.applicationId, router]);
 
-  // function to handle next step
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
   };
 
-  // function to handle previous step
   const handlePrevious = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
   };
 
-  // function to check whether step is valid to move on
   const isStepValid = () => {
     switch (currentStep) {
       case 0:
-        return "proceed to upload documents";
+        return (
+          formData.businessName &&
+          formData.businessType &&
+          formData.phoneNumber &&
+          formData.idNumber &&
+          formData.physicalAddress
+        );
       case 1:
-        return "Proceed to confirmation page";
+        return documents.length === requiredDocuments.length;
       default:
         return true;
     }
@@ -142,38 +129,55 @@ export function BusinessLicenseForm() {
         <ApplicationStepper steps={steps} currentStep={currentStep} />
       </div>
 
-      {currentStep === 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Business Information</CardTitle>
-            <CardDescription>
-              Provide details about your business
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {/* Application form */}
+      {/* Display global error message */}
 
-            <form action={formAction} className="space-y-4">
+      {state.error && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
+          {state.error}
+        </div>
+      )}
+
+      {/* Display success message */}
+
+      {state.success && (
+        <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-600">
+          {state.message}
+        </div>
+      )}
+
+      <form action={formAction}>
+        {/* Hidden field to pass documents */}
+        <input
+          type="hidden"
+          name="documents"
+          value={JSON.stringify(documents)}
+        />
+        {currentStep === 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Business Information</CardTitle>
+              <CardDescription>
+                Provide details about your business
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="businessName">Business Name *</Label>
                   <Input
                     id="businessName"
                     name="businessName"
-                    type="text"
-                    placeholder="Enter business name"
-                    required
-                    disabled={isPending}
-                    aria-describedby="businessName-error"
-                    className={
-                      state?.errors?.businessName ? "border-red-500" : ""
+                    value={formData.businessName}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        businessName: e.target.value,
+                      }))
                     }
+                    placeholder="Enter business name"
                   />
-
-                  {/* display business name error */}
-
-                  {state?.errors?.businessName && (
-                    <p id="businessName-error" className="text-sm text-red-500">
+                  {state.errors?.businessName && (
+                    <p className="text-sm text-red-500">
                       {state.errors.businessName[0]}
                     </p>
                   )}
@@ -182,60 +186,52 @@ export function BusinessLicenseForm() {
                   <Label htmlFor="businessType">Business Type *</Label>
                   <Select
                     name="businessType"
-                    disabled={isPending}
-                    aria-describedby="businessType-error"
+                    value={formData.businessType}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, businessType: value }))
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select business type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="retail">Retail</SelectItem>
-                      <SelectItem value="restaurant">
+                      <SelectItem value="Retail">Retail</SelectItem>
+                      <SelectItem value="Restaurant/Food Service">
                         Restaurant/Food Service
                       </SelectItem>
-                      <SelectItem value="manufacturing">
+                      <SelectItem value="Manufacturing">
                         Manufacturing
                       </SelectItem>
-                      <SelectItem value="services">
+                      <SelectItem value="Professional Services">
                         Professional Services
                       </SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
-
-                    {/* display business type error */}
-
-                    {state?.errors?.businessType && (
-                      <p
-                        id="businessType-error"
-                        className="text-sm text-red-500"
-                      >
-                        {state.errors.businessType[0]}
-                      </p>
-                    )}
                   </Select>
+                  {state.errors?.businessType && (
+                    <p className="text-sm text-red-500">
+                      {state.errors.businessType[0]}
+                    </p>
+                  )}
                 </div>
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="phoneNumber">Phone Number</Label>
+                  <Label htmlFor="phoneNumber">Phone Number *</Label>
                   <Input
                     id="phoneNumber"
                     name="phoneNumber"
-                    type="text"
-                    placeholder="+254 700 000 000"
-                    required
-                    disabled={isPending}
-                    aria-describedby="phoneNumber-error"
-                    className={
-                      state?.errors?.phoneNumber ? "border-red-500" : ""
+                    value={formData.phoneNumber}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        phoneNumber: e.target.value,
+                      }))
                     }
+                    placeholder="+254 700 000 000"
                   />
-
-                  {/* display phone number error */}
-
-                  {state?.errors?.phoneNumber && (
-                    <p id="phoneNumber-error" className="text-sm text-red-500">
+                  {state.errors?.phoneNumber && (
+                    <p className="text-sm text-red-500">
                       {state.errors.phoneNumber[0]}
                     </p>
                   )}
@@ -245,19 +241,18 @@ export function BusinessLicenseForm() {
                   <Input
                     id="idNumber"
                     name="idNumber"
-                    type="number"
+                    value={formData.idNumber}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        idNumber: e.target.value,
+                      }))
+                    }
                     placeholder="Enter ID number"
-                    required
-                    disabled={isPending}
-                    aria-describedby="idNumber-error"
-                    className={state?.errors?.idNumber ? "border-red-500" : ""}
                   />
-
-                  {/* display id number error */}
-
-                  {state?.errors?.idNumber && (
-                    <p id="idNumber-error" className="text-sm text-red-500">
-                      {state.errors.idNumber[0]}
+                  {state.errors?.nationalID && (
+                    <p className="text-sm text-red-500">
+                      {state.errors.nationalID[0]}
                     </p>
                   )}
                 </div>
@@ -265,75 +260,119 @@ export function BusinessLicenseForm() {
 
               <div className="space-y-2">
                 <Label htmlFor="physicalAddress">
-                  Business Physical Address
+                  Business Physical Address *
                 </Label>
                 <Textarea
                   id="physicalAddress"
                   name="physicalAddress"
-                  placeholder="Enter complete physical address"
-                  required
-                  aria-describedby="physicalAddress-error"
-                  className={
-                    state?.errors?.physicalAddress ? "border-red-500" : ""
+                  value={formData.physicalAddress}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      physicalAddress: e.target.value,
+                    }))
                   }
+                  placeholder="Enter complete physical address"
                 />
-
-                {/* display physical address error */}
-
-                {state?.errors?.physicalAddress && (
-                  <p
-                    id="physicalAddress-error"
-                    className="text-sm text-red-500"
-                  >
-                    {state.errors.physicalAddress[0]}
+                {state.errors?.businessAddress && (
+                  <p className="text-sm text-red-500">
+                    {state.errors.businessAddress[0]}
                   </p>
                 )}
               </div>
-              <Button type="submit" className="w-full" disabled={isPending}>
-                {isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating Account...
-                  </>
-                ) : (
-                  "Test Button"
-                )}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        )}
 
-      {/* document upload */}
-      {currentStep === 1 && (
-        <DocumentUpload
-          requiredDocuments={requiredDocuments}
-          onDocumentsChange={setDocuments}
-        />
-      )}
+        {currentStep === 1 && (
+          <DocumentUpload
+            requiredDocuments={requiredDocuments}
+            onDocumentsChange={setDocuments}
+          />
+        )}
 
-      {/* Review Application */}
-      {currentStep === 2 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Review Application</CardTitle>
-            <CardDescription>
-              Please review your information before proceeding to payment
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div>
-              <h3 className="font-semibold mb-3">Business Information</h3>
-              <div className="grid md:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <strong>Business Name:</strong>
-                  {}
+        {currentStep === 2 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Review Application</CardTitle>
+              <CardDescription>
+                Please review your information before proceeding to payment
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="font-semibold mb-3">Business Information</h3>
+                <div className="grid md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <strong>Business Name:</strong> {formData.businessName}
+                  </div>
+                  <div>
+                    <strong>Business Type:</strong> {formData.businessType}
+                  </div>
+                  <div>
+                    <strong>ID Number:</strong> {formData.idNumber}
+                  </div>
+                  <div>
+                    <strong>Phone:</strong> {formData.phoneNumber}
+                  </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+
+              <div>
+                <h3 className="font-semibold mb-3">Documents Uploaded</h3>
+                <div className="space-y-2">
+                  {documents.map((doc, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-2 text-sm"
+                    >
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      {doc.name}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-4 bg-primary/5 rounded-lg border">
+                <h3 className="font-semibold mb-2">Application Fee</h3>
+                <p className="text-2xl font-bold text-primary">KES 2,500</p>
+                <p className="text-sm text-muted-foreground">
+                  Processing time: 5-7 business days
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  You will be redirected to payment after submitting this
+                  application
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <div className="flex justify-between mt-8">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handlePrevious}
+            disabled={currentStep === 0 || isPending}
+          >
+            Previous
+          </Button>
+
+          {currentStep === steps.length - 1 ? (
+            <Button type="submit" disabled={!isStepValid() || isPending}>
+              {isPending ? "Processing..." : "Proceed to Payment"}
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              onClick={handleNext}
+              disabled={!isStepValid()}
+            >
+              Next
+            </Button>
+          )}
+        </div>
+      </form>
     </div>
   );
 }
