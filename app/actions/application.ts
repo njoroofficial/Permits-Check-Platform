@@ -4,7 +4,6 @@ import { getCurrentUser } from "@/lib/dal";
 import { prisma } from "@/lib/db";
 // The form validation will be through zod
 import { z } from "zod";
-import { fa } from "zod/v4/locales";
 
 //define zod schema for application form validation
 
