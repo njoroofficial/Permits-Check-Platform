@@ -54,6 +54,20 @@ const requiredDocuments = [
   "Location Map/GPS Coordinates",
 ];
 
+// various business types
+const businessTypes = [
+  "Retail",
+  "Restaurant",
+  "WholeSale",
+  "Manufacturing",
+  "Professional Services",
+  "Bar/Club",
+  "Environment",
+  "Construction",
+  "Transport",
+  "Food Services",
+];
+
 // Initial state for the form
 const initialFormState: FormState = {
   success: false,
@@ -70,6 +84,9 @@ export function BusinessLicenseForm({ permit }: BusinessLicenseFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   // hook to set documents
   const [documents, setDocuments] = useState<any[]>([]);
+
+  // get the current permit id
+  const permitId = permit.id;
 
   // Using useActionState for form handling
   const [state, formAction, isPending] = useActionState<FormState, FormData>(
@@ -130,10 +147,8 @@ export function BusinessLicenseForm({ permit }: BusinessLicenseFormProps) {
             <Building className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">Business License Application</h1>
-            <p className="text-muted-foreground">
-              Apply for a business operating license
-            </p>
+            <h1 className="text-2xl font-bold">{permit.name} Application</h1>
+            <p className="text-muted-foreground">{permit.description}</p>
           </div>
         </div>
         <ApplicationStepper steps={steps} currentStep={currentStep} />
@@ -156,12 +171,15 @@ export function BusinessLicenseForm({ permit }: BusinessLicenseFormProps) {
       )}
 
       <form action={formAction}>
-        {/* Hidden field to pass documents */}
+        {/* Hidden field to pass documents to server action */}
         <input
           type="hidden"
           name="documents"
           value={JSON.stringify(documents)}
         />
+
+        {/* Hidden field to pass permitId to server action*/}
+        <input type="hidden" name="permitTypeId" value={permitId} />
         {currentStep === 0 && (
           <Card>
             <CardHeader>
@@ -194,29 +212,31 @@ export function BusinessLicenseForm({ permit }: BusinessLicenseFormProps) {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="businessType">Business Type *</Label>
+
+                  {/* display a select option for various business license */}
+
                   <Select
                     name="businessType"
                     value={formData.businessType}
                     onValueChange={(value) =>
-                      setFormData((prev) => ({ ...prev, businessType: value }))
+                      setFormData((prev) => ({
+                        ...prev,
+                        businessType: value,
+                      }))
                     }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select business type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Retail">Retail</SelectItem>
-                      <SelectItem value="Restaurant/Food Service">
-                        Restaurant/Food Service
-                      </SelectItem>
-                      <SelectItem value="Manufacturing">
-                        Manufacturing
-                      </SelectItem>
-                      <SelectItem value="Professional Services">
-                        Professional Services
-                      </SelectItem>
+                      {businessTypes.map((type, index) => (
+                        <SelectItem key={index} value={businessTypes[index]}>
+                          {type}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
+
                   {state.errors?.businessType && (
                     <p className="text-sm text-red-500">
                       {state.errors.businessType[0]}

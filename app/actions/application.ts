@@ -2,6 +2,7 @@
 
 import { getCurrentUser } from "@/lib/dal";
 import { prisma } from "@/lib/db";
+import { connect } from "http2";
 // The form validation will be through zod
 import { z } from "zod";
 
@@ -9,9 +10,15 @@ import { z } from "zod";
 
 const industryTypes = [
   "Retail",
-  "Restaurant/Food Service",
+  "Restaurant",
+  "WholeSale",
   "Manufacturing",
   "Professional Services",
+  "Bar/Club",
+  "Environment",
+  "Construction",
+  "Transport",
+  "Food Services",
 ] as const;
 
 const applicationFormSchema = z.object({
@@ -38,6 +45,15 @@ export interface FormState {
   applicationId?: string | null;
   formData?: Partial<FormData>;
   documents?: any[];
+}
+
+// helper function to generate a unique application ID
+function generateApplicationNumber(): string {
+  const timestamp = Date.now();
+  const random = Math.floor(Math.random() * 1000)
+    .toString()
+    .padStart(3, "0");
+  return `APP-${timestamp}-${random}`;
 }
 
 // Initialize a business license application
@@ -69,12 +85,6 @@ export async function submitBusinessLicense(
       businessAddress: formData.get("physicalAddress") as string,
     };
 
-    // Get documents from previous state or form data
-    const documentsJson = formData.get("documents") as string;
-    const documents = documentsJson
-      ? JSON.parse(documentsJson)
-      : prevState.documents || [];
-
     // validate with zod
     const validationResult = applicationFormSchema.safeParse(rawFormData);
 
@@ -86,25 +96,62 @@ export async function submitBusinessLicense(
       };
     }
 
+    // Get documents from previous state or form data
+    const documentsJson = formData.get("documents") as string;
+    const documents = documentsJson
+      ? JSON.parse(documentsJson)
+      : prevState.documents || [];
+
     // If validation passes, create the application
     const validatedData = validationResult.data;
 
     // Generate application ID
-    const applicationId = `APP-${Date.now()}`;
+    const applicationId = generateApplicationNumber();
 
-    // create a business license application in the database
+    // get current permit type id
+    const currentPermitId = formData.get("permitTypeId") as string;
 
-    // await prisma.application.create({
-    //   data: {
-    //     applicationNumber: applicationId,
-    //     businessName: validatedData.businessName,
-    //     businessType: validatedData.businessType,
-    //     businessAddress: validatedData.businessAddress,
-    //     userId: user.id, // Associate with authenticated user
-    //     permitTypeId: "Business License",
-    //     documents: documents,
-    //   },
-    // });
+    // Create application with nested documents using a single transaction
+    const application = await prisma.application.create({
+      data: {
+        applicationNumber: applicationId,
+        status: "DRAFT",
+
+        // Connect to user
+        user: {
+          connect: { id: user.id },
+        },
+
+        // connect to permit type
+        permitType: {
+          connect: { id: currentPermitId },
+        },
+
+        // Business details
+        businessName: validatedData.businessName,
+        businessType: validatedData.businessType,
+        businessAddress: validatedData.businessAddress,
+
+        // Create nested documents in the same transaction
+        documents: {
+          create: documents.map((doc: any) => ({
+            fileName: doc.name,
+            originalName: doc.name,
+            fileSize: doc.size,
+            mimeType: doc.mimeType || "application/octet-stream",
+            documentType: doc.type || "OTHER",
+            fileUrl: doc.url,
+          })),
+        },
+
+        // Set submission timestamp
+        submittedAt: new Date(),
+      },
+      include: {
+        documents: true,
+        permitType: true,
+      },
+    });
 
     return {
       success: true,
