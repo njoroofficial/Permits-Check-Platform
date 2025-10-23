@@ -2,13 +2,13 @@
 
 import { getCurrentUser } from "@/lib/dal";
 import { prisma } from "@/lib/db";
-import { connect } from "http2";
+import Link from "next/link";
 // The form validation will be through zod
 import { z } from "zod";
 
 //define zod schema for application form validation
 
-const industryTypes = [
+const businessTypes = [
   "Retail",
   "Restaurant",
   "WholeSale",
@@ -23,7 +23,7 @@ const industryTypes = [
 
 const applicationFormSchema = z.object({
   businessName: z.string().min(1, "Business Name is required"),
-  businessType: z.enum(industryTypes, {
+  businessType: z.enum(businessTypes, {
     message: "Please select a valid business type",
   }),
   phoneNumber: z
@@ -77,11 +77,17 @@ export async function submitBusinessLicense(
       businessName: formData.get("businessName") as string,
       businessType: formData.get("businessType") as
         | "Retail"
-        | "Restaurant/Food Service"
+        | "Restaurant"
+        | "WholeSale"
         | "Manufacturing"
-        | "Professional Services",
+        | "Professional Services"
+        | "Bar/Club"
+        | "Environment"
+        | "Construction"
+        | "Transport"
+        | "Food Services",
       phoneNumber: formData.get("phoneNumber") as string,
-      nationalID: Number(formData.get("idNumber")),
+      nationalID: formData.get("idNumber") as string,
       businessAddress: formData.get("physicalAddress") as string,
     };
 
@@ -89,6 +95,10 @@ export async function submitBusinessLicense(
     const validationResult = applicationFormSchema.safeParse(rawFormData);
 
     if (!validationResult.success) {
+      console.log(rawFormData);
+
+      console.log("Validation failed");
+
       return {
         success: false,
         message: "Validation failed. Please check the form fields",
@@ -156,6 +166,7 @@ export async function submitBusinessLicense(
     return {
       success: true,
       message: "Business Application created successfully",
+      applicationId: application.id,
     };
   } catch (error) {
     console.error("Error creating business application:", error);

@@ -105,6 +105,8 @@ export function BusinessLicenseForm({ permit }: BusinessLicenseFormProps) {
 
   // Redirect to payment page on successful submission
   useEffect(() => {
+    console.log("Redirect check:", state.success, state.applicationId);
+
     if (state.success && state.applicationId) {
       router.push(`/payment/${state.applicationId}`);
     }
