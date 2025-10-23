@@ -94,17 +94,17 @@ export async function submitBusinessLicense(
 
     // create a business license application in the database
 
-    await prisma.application.create({
-      data: {
-        applicationNumber: applicationId,
-        businessName: validatedData.businessName,
-        businessType: validatedData.businessType,
-        businessAddress: validatedData.businessAddress,
-        userId: user.id, // Associate with authenticated user
-        permitTypeId: "Business License",
-        documents: documents,
-      },
-    });
+    // await prisma.application.create({
+    //   data: {
+    //     applicationNumber: applicationId,
+    //     businessName: validatedData.businessName,
+    //     businessType: validatedData.businessType,
+    //     businessAddress: validatedData.businessAddress,
+    //     userId: user.id, // Associate with authenticated user
+    //     permitTypeId: "Business License",
+    //     documents: documents,
+    //   },
+    // });
 
     return {
       success: true,

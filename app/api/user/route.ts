@@ -1,6 +1,7 @@
 import { getCurrentUser } from "@/lib/dal";
 import { NextResponse } from "next/server";
 
+// This API route fetches the current user data
 export async function GET() {
   try {
     const user = await getCurrentUser();

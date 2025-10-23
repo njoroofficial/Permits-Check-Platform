@@ -25,6 +25,20 @@ import { ApplicationStepper } from "./application-stepper";
 import { DocumentUpload } from "./document-upload";
 import { FormState, submitBusinessLicense } from "@/app/actions/application";
 
+// Defining permit types
+interface PermitType {
+  fee: string;
+  name: string;
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  isActive: boolean;
+  description: string | null;
+}
+interface BusinessLicenseFormProps {
+  permits: PermitType[]; // <-- Change this line to accept an array
+}
+
 // Application steps
 const steps = [
   { title: "Business Info", description: "Basic details" },
@@ -40,10 +54,6 @@ const requiredDocuments = [
   "Location Map/GPS Coordinates",
 ];
 
-interface BusinessLicenseFormProps {
-  onSubmit?: (data: any) => void;
-}
-
 // Initial state for the form
 const initialFormState: FormState = {
   success: false,
@@ -54,7 +64,7 @@ const initialFormState: FormState = {
   documents: [],
 };
 
-export function BusinessLicenseForm({ onSubmit }: BusinessLicenseFormProps) {
+export function BusinessLicenseForm({ permits }: BusinessLicenseFormProps) {
   const router = useRouter();
   // hook to handle form next state
   const [currentStep, setCurrentStep] = useState(0);
