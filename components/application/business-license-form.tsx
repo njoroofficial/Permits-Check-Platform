@@ -36,7 +36,7 @@ interface PermitType {
   description: string | null;
 }
 interface BusinessLicenseFormProps {
-  permits: PermitType[]; // <-- Change this line to accept an array
+  permits: PermitType[];
 }
 
 // Application steps

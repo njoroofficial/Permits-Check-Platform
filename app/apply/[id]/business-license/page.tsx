@@ -12,13 +12,15 @@ export default async function BusinessLicenseApplicationPage() {
       {user ? (
         <DashboardHeader user={user} />
       ) : (
-        <div className="p-4 bg-muted">Loading user information...</div>
+        <div className="p-4 bg-muted">Loading current user information...</div>
       )}
       <main className="container mx-auto px-4 py-8">
         {permits ? (
           <BusinessLicenseForm permits={permits} />
         ) : (
-          <div className="p-4 bg-muted">Loading permit information...</div>
+          <div className="p-4 bg-muted">
+            Loading current permit information...
+          </div>
         )}
       </main>
     </div>

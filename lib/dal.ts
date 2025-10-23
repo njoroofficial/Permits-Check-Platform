@@ -76,3 +76,27 @@ export const getPermitTypes = async () => {
     throw new Error("Failed to fetch permit Types");
   }
 };
+
+// when user clicks on a permit type, get the permit type details
+// get permit type by id
+export const getPermitTypeById = async (id: string) => {
+  try {
+    const result = await prisma.permitType.findUnique({
+      where: { id },
+    });
+
+    if (!result) {
+      console.log(`No permit type found with id: ${id}`);
+      return null;
+    }
+
+    // Serialize Decimal to string before returning
+    return {
+      ...result,
+      fee: result.fee.toString(), // Convert Decimal to string
+    };
+  } catch (error) {
+    console.error("Error fetching permit type by ID:", error);
+    return null;
+  }
+};
