@@ -36,7 +36,7 @@ interface PermitType {
   description: string | null;
 }
 interface BusinessLicenseFormProps {
-  permits: PermitType[];
+  permit: PermitType;
 }
 
 // Application steps
@@ -64,7 +64,7 @@ const initialFormState: FormState = {
   documents: [],
 };
 
-export function BusinessLicenseForm({ permits }: BusinessLicenseFormProps) {
+export function BusinessLicenseForm({ permit }: BusinessLicenseFormProps) {
   const router = useRouter();
   // hook to handle form next state
   const [currentStep, setCurrentStep] = useState(0);
@@ -345,7 +345,7 @@ export function BusinessLicenseForm({ permits }: BusinessLicenseFormProps) {
 
               <div className="p-4 bg-primary/5 rounded-lg border">
                 <h3 className="font-semibold mb-2">Application Fee</h3>
-                <p className="text-2xl font-bold text-primary">KES 2,500</p>
+                <p className="text-2xl font-bold text-primary">{permit.fee}</p>
                 <p className="text-sm text-muted-foreground">
                   Processing time: 5-7 business days
                 </p>
