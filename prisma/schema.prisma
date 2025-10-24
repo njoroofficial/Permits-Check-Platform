@@ -44,37 +44,18 @@ enum PaymentMethod {
 }
 
 enum DocumentType {
-  ID_COPY
-  BUSINESS_CERTIFICATE
-  TAX_CERTIFICATE
-  LOCATION_MAP
-  BUILDING_PLAN
-  ENVIRONMENTAL_IMPACT
+  NATIONAL_ID_COPY
+  BUSINESS_REGISTRATION_CERTIFICATE
+  TAX_COMPLIANCE_CERTIFICATE
+  LOCATION_MAP_GPS_COORDINATES
   OTHER
 }
-
-// supabase auth model
-model SupabaseAuth {
-  id            String   @id // Matches Supabase auth.users.id (UUID)
-  userId        String   @unique // Reference to your User model
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  email         String   @unique // Duplicate of auth.users.email for easier queries
-  provider      String   @default("email") // "email"
-  password      String
-  lastSignIn    DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@map("supabase_auth")
-}
-
 
 // CREATING USER MODEL
 
 model User {
-  id          String   @id @default(cuid())
+  id          String   @id // This will match Supabase auth.users.id
   email       String   @unique
-  password    String
   firstName   String
   lastName    String
   phoneNumber String?
@@ -89,7 +70,6 @@ model User {
   payments     Payment[]
   statusUpdates ApplicationStatusHistory[]
   assignedApplications Application[] @relation("AssignedApplications")
-  supabaseAuth SupabaseAuth?
 
   @@map("users")
 }
@@ -153,22 +133,19 @@ model Application {
 
 // document model
 model Document {
-  id            String       @id @default(cuid())
-  fileName      String
-  originalName  String
-  fileSize      Int
-  mimeType      String
-  documentType  DocumentType
-  fileUrl       String
+  id             String       @id @default(cuid())
+  applicationId  String
+  fileName       String
+  originalName   String
+  fileSize       Int
+  mimeType       String
+  documentType   DocumentType
+  fileUrl        String
+  createdAt      DateTime     @default(now())
   
-  // Relations
-  applicationId String
-  application   Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  application    Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-
-  @@map("documents")
+  @@index([applicationId])
 }
 
 // payment model

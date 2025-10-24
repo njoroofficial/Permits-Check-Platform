@@ -1,37 +1,35 @@
-import { getSession } from "./auth";
 import { prisma } from "./db";
 import { unstable_cacheTag as cacheTag } from "next/cache";
 import { cache } from "react";
+import { createClient } from "./supabase/server";
 
-// get current user
+// Get current user
 export const getCurrentUser = cache(async () => {
-  const session = await getSession();
-
-  if (!session) return null;
-
-  // Skip database query during prerendering if we don't have a session
-
-  if (
-    typeof window === "undefined" &&
-    process.env.NEXT_PHASE === "phase-production-build"
-  ) {
-    return null;
-  }
-
   try {
-    // Get user from database using the session
-    const result = await prisma.user.findFirst({
-      where: { id: session.userId },
+    const supabase = await createClient();
+
+    const {
+      data: { user: authUser },
+      error,
+    } = await supabase.auth.getUser();
+
+    if (error || !authUser) {
+      return null;
+    }
+
+    // Get user from database
+    const user = await prisma.user.findUnique({
+      where: { id: authUser.id },
     });
 
-    return result;
+    return user;
   } catch (error) {
     console.error("Error fetching current user:", error);
     return null;
   }
 });
 
-// get user by email
+// Get user by email
 export const getUserByEmail = async (email: string) => {
   if (!email) {
     console.error("Email is required");
@@ -39,8 +37,7 @@ export const getUserByEmail = async (email: string) => {
   }
 
   try {
-    // Check if the user with provided email exists in the database
-    const result = await prisma.supabaseAuth.findFirst({
+    const result = await prisma.user.findUnique({
       where: { email },
     });
 

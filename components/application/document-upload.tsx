@@ -1,113 +1,135 @@
 "use client";
 
-import type React from "react";
-
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Upload, File, X } from "lucide-react";
-
-interface Document {
-  id: string;
-  name: string;
-  file: File;
-}
+import { Input } from "@/components/ui/input";
+import { FileText, Upload, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface DocumentUploadProps {
   requiredDocuments: string[];
-  onDocumentsChange: (documents: Document[]) => void;
+  onDocumentsChange: (documents: any[]) => void;
+}
+
+// Helper function to convert document name to valid enum value
+function getDocumentTypeEnum(docName: string): string {
+  const mapping: Record<string, string> = {
+    "National ID Copy": "NATIONAL_ID_COPY",
+    "Business Registration Certificate": "BUSINESS_REGISTRATION_CERTIFICATE",
+    "Tax Compliance Certificate": "TAX_COMPLIANCE_CERTIFICATE",
+    "Location Map/GPS Coordinates": "LOCATION_MAP_GPS_COORDINATES",
+  };
+
+  return mapping[docName] || "OTHER";
 }
 
 export function DocumentUpload({
   requiredDocuments,
   onDocumentsChange,
 }: DocumentUploadProps) {
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const [uploadedDocs, setUploadedDocs] = useState<Record<string, any>>({});
 
-  const handleFileUpload = (
-    event: React.ChangeEvent<HTMLInputElement>,
-    docType: string
+  const handleFileChange = async (
+    docType: string,
+    e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const newDoc: Document = {
-        id: Date.now().toString(),
-        name: docType,
-        file,
-      };
-      const updatedDocs = [
-        ...documents.filter((d) => d.name !== docType),
-        newDoc,
-      ];
-      setDocuments(updatedDocs);
-      onDocumentsChange(updatedDocs);
-    }
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Create a preview URL for the file
+    const fileUrl = URL.createObjectURL(file);
+
+    const docData = {
+      name: docType,
+      fileName: file.name,
+      size: file.size,
+      type: file.type,
+      mimeType: file.type,
+      documentType: getDocumentTypeEnum(docType), // Use the helper function
+      fileUrl: fileUrl, // This is a temporary URL
+      preview: fileUrl,
+      url: fileUrl,
+      file: file, // Keep the original file for actual upload
+    };
+
+    const updated = { ...uploadedDocs, [docType]: docData };
+    setUploadedDocs(updated);
+
+    // Convert to array and pass to parent
+    const docsArray = requiredDocuments
+      .filter((doc) => updated[doc])
+      .map((doc) => updated[doc]);
+
+    onDocumentsChange(docsArray);
   };
 
-  const removeDocument = (docId: string) => {
-    const updatedDocs = documents.filter((d) => d.id !== docId);
-    setDocuments(updatedDocs);
-    onDocumentsChange(updatedDocs);
+  const handleRemove = (docType: string) => {
+    const updated = { ...uploadedDocs };
+
+    // Revoke the blob URL to prevent memory leaks
+    if (updated[docType]?.fileUrl) {
+      URL.revokeObjectURL(updated[docType].fileUrl);
+    }
+
+    delete updated[docType];
+    setUploadedDocs(updated);
+
+    const docsArray = requiredDocuments
+      .filter((doc) => updated[doc])
+      .map((doc) => updated[doc]);
+
+    onDocumentsChange(docsArray);
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Upload className="w-5 h-5" />
-          Required Documents
-        </CardTitle>
-        <CardDescription>
-          Please upload all required documents for your application
-        </CardDescription>
+        <CardTitle>Required Documents</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {requiredDocuments.map((docType, index) => {
-          const uploadedDoc = documents.find((d) => d.name === docType);
-
-          return (
-            <div key={index} className="space-y-2">
-              <Label htmlFor={`doc-${index}`}>{docType}</Label>
-              {uploadedDoc ? (
-                <div className="flex items-center justify-between p-3 border rounded-lg bg-muted/50">
-                  <div className="flex items-center gap-2">
-                    <File className="w-4 h-4 text-primary" />
-                    <span className="text-sm">{uploadedDoc.file.name}</span>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeDocument(uploadedDoc.id)}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              ) : (
+        {requiredDocuments.map((docType) => (
+          <div key={docType} className="space-y-2">
+            <Label htmlFor={`doc-${docType}`}>{docType} *</Label>
+            {!uploadedDocs[docType] ? (
+              <div className="flex items-center gap-2">
                 <Input
-                  id={`doc-${index}`}
+                  id={`doc-${docType}`}
                   type="file"
+                  onChange={(e) => handleFileChange(docType, e)}
                   accept=".pdf,.jpg,.jpeg,.png"
-                  onChange={(e) => handleFileUpload(e, docType)}
                   className="cursor-pointer"
                 />
-              )}
-            </div>
-          );
-        })}
-
-        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-sm text-blue-800">
-            <strong>Accepted formats:</strong> PDF, JPG, PNG (Max 5MB per file)
-          </p>
-        </div>
+                <Upload className="w-4 h-4 text-muted-foreground" />
+              </div>
+            ) : (
+              <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-green-600" />
+                  <div>
+                    <p className="text-sm font-medium">
+                      {uploadedDocs[docType].fileName}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {(uploadedDocs[docType].size / 1024).toFixed(2)} KB
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleRemove(docType)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+        ))}
+        <p className="text-sm text-muted-foreground">
+          Accepted formats: PDF, JPG, PNG (Max 5MB per file)
+        </p>
       </CardContent>
     </Card>
   );

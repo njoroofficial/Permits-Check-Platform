@@ -19,11 +19,12 @@ import {
 } from "@/components/ui/select";
 import { Building, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import { ApplicationStepper } from "./application-stepper";
 import { DocumentUpload } from "./document-upload";
 import { FormState, submitBusinessLicense } from "@/app/actions/application";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Defining permit types
 interface PermitType {
@@ -74,27 +75,18 @@ const initialFormState: FormState = {
   message: "",
   errors: {},
   applicationId: null,
-  formData: {},
-  documents: [],
 };
 
 export function BusinessLicenseForm({ permit }: BusinessLicenseFormProps) {
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
+
   // hook to handle form next state
   const [currentStep, setCurrentStep] = useState(0);
   // hook to set documents
   const [documents, setDocuments] = useState<any[]>([]);
 
-  // get the current permit id
-  const permitId = permit.id;
-
-  // Using useActionState for form handling
-  const [state, formAction, isPending] = useActionState<FormState, FormData>(
-    submitBusinessLicense,
-    initialFormState
-  );
-
-  // Local form data state for multi-step navigation
+  // Local form data state
   const [formData, setFormData] = useState({
     businessName: "",
     businessType: "",
@@ -103,11 +95,19 @@ export function BusinessLicenseForm({ permit }: BusinessLicenseFormProps) {
     physicalAddress: "",
   });
 
+  // Using useActionState for form handling
+  const [state, formAction, isPending] = useActionState<FormState, FormData>(
+    submitBusinessLicense,
+    initialFormState
+  );
+
   // Redirect to payment page on successful submission
   useEffect(() => {
-    console.log("Redirect check:", state.success, state.applicationId);
-
     if (state.success && state.applicationId) {
+      // Optional: Show success toast
+      console.log("Application submitted successfully:", state.applicationId);
+
+      // Redirect to payment
       router.push(`/payment/${state.applicationId}`);
     }
   }, [state.success, state.applicationId, router]);
@@ -136,8 +136,10 @@ export function BusinessLicenseForm({ permit }: BusinessLicenseFormProps) {
         );
       case 1:
         return documents.length === requiredDocuments.length;
-      default:
+      case 2:
         return true;
+      default:
+        return false;
     }
   };
 
@@ -156,32 +158,71 @@ export function BusinessLicenseForm({ permit }: BusinessLicenseFormProps) {
         <ApplicationStepper steps={steps} currentStep={currentStep} />
       </div>
 
-      {/* Display global error message */}
-
-      {state.error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
-          {state.error}
-        </div>
+      {/* Display error message */}
+      {state.error && !state.success && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{state.error}</AlertDescription>
+        </Alert>
       )}
 
-      {/* Display success message */}
-
-      {state.success && (
-        <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-600">
-          {state.message}
-        </div>
+      {/* Display validation errors */}
+      {state.errors && Object.keys(state.errors).length > 0 && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>
+            <div className="font-semibold mb-2">
+              Please fix the following errors:
+            </div>
+            <ul className="list-disc list-inside space-y-1">
+              {Object.entries(state.errors).map(([field, messages]) => (
+                <li key={field}>
+                  <strong className="capitalize">
+                    {field.replace(/([A-Z])/g, " $1").trim()}:
+                  </strong>{" "}
+                  {Array.isArray(messages) ? messages[0] : messages}
+                </li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
       )}
 
-      <form action={formAction}>
-        {/* Hidden field to pass documents to server action */}
+      <form ref={formRef} action={formAction}>
+        {/* Hidden fields - These persist across all steps */}
         <input
           type="hidden"
           name="documents"
           value={JSON.stringify(documents)}
         />
+        <input type="hidden" name="permitTypeId" value={permit.id} />
 
-        {/* Hidden field to pass permitId to server action*/}
-        <input type="hidden" name="permitTypeId" value={permitId} />
+        {/* Hidden fields to preserve form data across steps */}
+        {currentStep !== 0 && (
+          <>
+            <input
+              type="hidden"
+              name="businessName"
+              value={formData.businessName}
+            />
+            <input
+              type="hidden"
+              name="businessType"
+              value={formData.businessType}
+            />
+            <input
+              type="hidden"
+              name="phoneNumber"
+              value={formData.phoneNumber}
+            />
+            <input type="hidden" name="idNumber" value={formData.idNumber} />
+            <input
+              type="hidden"
+              name="physicalAddress"
+              value={formData.physicalAddress}
+            />
+          </>
+        )}
+
+        {/* Step 0: Business Information */}
         {currentStep === 0 && (
           <Card>
             <CardHeader>
@@ -205,6 +246,10 @@ export function BusinessLicenseForm({ permit }: BusinessLicenseFormProps) {
                       }))
                     }
                     placeholder="Enter business name"
+                    disabled={isPending}
+                    className={
+                      state.errors?.businessName ? "border-red-500" : ""
+                    }
                   />
                   {state.errors?.businessName && (
                     <p className="text-sm text-red-500">
@@ -212,11 +257,9 @@ export function BusinessLicenseForm({ permit }: BusinessLicenseFormProps) {
                     </p>
                   )}
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="businessType">Business Type *</Label>
-
-                  {/* display a select option for various business license */}
-
                   <Select
                     name="businessType"
                     value={formData.businessType}
@@ -226,19 +269,23 @@ export function BusinessLicenseForm({ permit }: BusinessLicenseFormProps) {
                         businessType: value,
                       }))
                     }
+                    disabled={isPending}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger
+                      className={
+                        state.errors?.businessType ? "border-red-500" : ""
+                      }
+                    >
                       <SelectValue placeholder="Select business type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {businessTypes.map((type, index) => (
-                        <SelectItem key={index} value={businessTypes[index]}>
+                      {businessTypes.map((type) => (
+                        <SelectItem key={type} value={type}>
                           {type}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-
                   {state.errors?.businessType && (
                     <p className="text-sm text-red-500">
                       {state.errors.businessType[0]}
@@ -261,6 +308,10 @@ export function BusinessLicenseForm({ permit }: BusinessLicenseFormProps) {
                       }))
                     }
                     placeholder="+254 700 000 000"
+                    disabled={isPending}
+                    className={
+                      state.errors?.phoneNumber ? "border-red-500" : ""
+                    }
                   />
                   {state.errors?.phoneNumber && (
                     <p className="text-sm text-red-500">
@@ -268,6 +319,7 @@ export function BusinessLicenseForm({ permit }: BusinessLicenseFormProps) {
                     </p>
                   )}
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="idNumber">National ID Number *</Label>
                   <Input
@@ -281,6 +333,8 @@ export function BusinessLicenseForm({ permit }: BusinessLicenseFormProps) {
                       }))
                     }
                     placeholder="Enter ID number"
+                    disabled={isPending}
+                    className={state.errors?.nationalID ? "border-red-500" : ""}
                   />
                   {state.errors?.nationalID && (
                     <p className="text-sm text-red-500">
@@ -305,6 +359,10 @@ export function BusinessLicenseForm({ permit }: BusinessLicenseFormProps) {
                     }))
                   }
                   placeholder="Enter complete physical address"
+                  disabled={isPending}
+                  className={
+                    state.errors?.businessAddress ? "border-red-500" : ""
+                  }
                 />
                 {state.errors?.businessAddress && (
                   <p className="text-sm text-red-500">
@@ -316,6 +374,7 @@ export function BusinessLicenseForm({ permit }: BusinessLicenseFormProps) {
           </Card>
         )}
 
+        {/* Step 1: Documents */}
         {currentStep === 1 && (
           <DocumentUpload
             requiredDocuments={requiredDocuments}
@@ -323,6 +382,7 @@ export function BusinessLicenseForm({ permit }: BusinessLicenseFormProps) {
           />
         )}
 
+        {/* Step 2: Review */}
         {currentStep === 2 && (
           <Card>
             <CardHeader>
@@ -346,6 +406,9 @@ export function BusinessLicenseForm({ permit }: BusinessLicenseFormProps) {
                   </div>
                   <div>
                     <strong>Phone:</strong> {formData.phoneNumber}
+                  </div>
+                  <div className="md:col-span-2">
+                    <strong>Address:</strong> {formData.physicalAddress}
                   </div>
                 </div>
               </div>
@@ -380,6 +443,7 @@ export function BusinessLicenseForm({ permit }: BusinessLicenseFormProps) {
           </Card>
         )}
 
+        {/* Navigation Buttons */}
         <div className="flex justify-between mt-8">
           <Button
             type="button"
@@ -392,13 +456,20 @@ export function BusinessLicenseForm({ permit }: BusinessLicenseFormProps) {
 
           {currentStep === steps.length - 1 ? (
             <Button type="submit" disabled={!isStepValid() || isPending}>
-              {isPending ? "Processing..." : "Proceed to Payment"}
+              {isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                "Proceed to Payment"
+              )}
             </Button>
           ) : (
             <Button
               type="button"
               onClick={handleNext}
-              disabled={!isStepValid()}
+              disabled={!isStepValid() || isPending}
             >
               Next
             </Button>
