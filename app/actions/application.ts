@@ -155,43 +155,43 @@ export async function submitBusinessLicense(
     }
 
     // Create application in database
-    const application = await prisma.application.create({
-      data: {
-        applicationNumber: applicationId,
-        status: "DRAFT",
-        user: {
-          connect: { id: user.id },
-        },
-        permitType: {
-          connect: { id: validatedData.permitTypeId },
-        },
-        businessName: validatedData.businessName,
-        businessType: validatedData.businessType,
-        businessAddress: validatedData.businessAddress,
-        documents: {
-          create: documents.map((doc: any) => {
-            // Get the file URL with fallback logic
-            const fileUrl = doc.fileUrl || doc.url || doc.preview || "";
+    const application = await prisma.$transaction(async (tx) => {
+      return await tx.application.create({
+        data: {
+          applicationNumber: applicationId,
+          status: "DRAFT",
+          user: {
+            connect: { id: user.id },
+          },
+          permitType: {
+            connect: { id: validatedData.permitTypeId },
+          },
+          businessName: validatedData.businessName,
+          businessType: validatedData.businessType,
+          businessAddress: validatedData.businessAddress,
+          documents: {
+            create: documents.map((doc: any) => {
+              const fileUrl = doc.fileUrl || doc.url || doc.preview || "";
+              const documentType = doc.documentType || "OTHER";
 
-            // Ensure documentType is valid
-            const documentType = doc.documentType || "OTHER";
-
-            return {
-              fileName: doc.fileName || doc.name,
-              originalName: doc.fileName || doc.name,
-              fileSize: doc.size || 0,
-              mimeType: doc.mimeType || doc.type || "application/octet-stream",
-              documentType: documentType, // This should now be a valid enum value
-              fileUrl: fileUrl,
-            };
-          }),
+              return {
+                fileName: doc.fileName || doc.name,
+                originalName: doc.fileName || doc.name,
+                fileSize: doc.size || 0,
+                mimeType:
+                  doc.mimeType || doc.type || "application/octet-stream",
+                documentType: documentType,
+                fileUrl: fileUrl,
+              };
+            }),
+          },
+          submittedAt: new Date(),
         },
-        submittedAt: new Date(),
-      },
-      include: {
-        documents: true,
-        permitType: true,
-      },
+        include: {
+          documents: true,
+          permitType: true,
+        },
+      });
     });
 
     console.log("Application created successfully:", application.id); // DEBUG
