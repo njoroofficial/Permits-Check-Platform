@@ -1,15 +1,9 @@
 "use server";
 
-// The form validation will be through zod
-import z from "zod";
-import {
-  createSession,
-  verifyPassword,
-  createUserWithAuth,
-  deleteSession,
-} from "@/lib/auth";
-import { getUserByEmail } from "@/lib/dal";
+import { z } from "zod";
 import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/db";
 
 //define zod schema for signin validation
 const signInScheme = z.object({
@@ -47,13 +41,12 @@ export async function signUp(formData: FormData): Promise<ActionResponse> {
   try {
     const data = {
       fullName: formData.get("fullName") as string,
-      account_type: formData.get("accountType") as string,
       email: formData.get("email") as string,
       password: formData.get("password") as string,
       confirmPassword: formData.get("confirmPassword") as string,
     };
 
-    // validation with zod
+    // Validation with zod
     const validationResult = SignUpSchema.safeParse(data);
 
     if (!validationResult.success) {
@@ -64,52 +57,56 @@ export async function signUp(formData: FormData): Promise<ActionResponse> {
       };
     }
 
-    // Check if user already exists
-    const existingUser = await getUserByEmail(data.email);
-    if (existingUser) {
+    const supabase = await createClient();
+    const [firstName, ...lastNameParts] = data.fullName.split(" ");
+    const lastName = lastNameParts.join(" ");
+
+    // Sign up with Supabase
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        data: {
+          first_name: firstName,
+          last_name: lastName,
+        },
+      },
+    });
+
+    if (authError) {
       return {
         success: false,
-        message: "User with this email already exists",
-        errors: {
-          email: ["User with this email already exists"],
-        },
+        message: authError.message,
       };
     }
 
-    const [firstName, ...lastNameParts] = data.fullName.split(" ");
-    const lastName = lastNameParts.join(" ") || "";
-    const role = data.account_type === "officer" ? "OFFICER" : "CITIZEN";
+    if (!authData.user) {
+      return {
+        success: false,
+        message: "Failed to create user",
+      };
+    }
 
     // Create user in your database
-    const result = await createUserWithAuth(
-      data.email,
-      data.password,
-      firstName,
-      lastName,
-      role
-    );
-
-    if (!result) {
-      return {
-        success: false,
-        message: "Failed to create user account",
-        error: "Failed to create user account",
-      };
-    }
-
-    // Create session for our application
-    await createSession(result.userId);
+    await prisma.user.create({
+      data: {
+        id: authData.user.id, // Use Supabase user ID
+        email: data.email,
+        firstName,
+        lastName,
+        role: "CITIZEN",
+      },
+    });
 
     return {
       success: true,
       message: "Account created successfully",
     };
-  } catch (error) {
-    console.log("Sign up error", error);
+  } catch (error: any) {
+    console.error("Signup error:", error);
     return {
       success: false,
-      message: "An error occurred during sign up",
-      error: "Failed to sign up user",
+      message: error.message || "An error occurred during signup",
     };
   }
 }
@@ -122,7 +119,7 @@ export async function signIn(formData: FormData): Promise<ActionResponse> {
       password: formData.get("password") as string,
     };
 
-    // validate with zod
+    // Validate with zod
     const validationResult = signInScheme.safeParse(data);
 
     if (!validationResult.success) {
@@ -133,9 +130,15 @@ export async function signIn(formData: FormData): Promise<ActionResponse> {
       };
     }
 
-    // find user by email
-    const auth = await getUserByEmail(data.email);
-    if (!auth) {
+    const supabase = await createClient();
+
+    // Sign in with Supabase
+    const { error } = await supabase.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
+    });
+
+    if (error) {
       return {
         success: false,
         message: "Invalid email or password",
@@ -145,43 +148,22 @@ export async function signIn(formData: FormData): Promise<ActionResponse> {
       };
     }
 
-    // Verify password
-    const isPasswordValid = await verifyPassword(data.password, auth.password);
-    if (!isPasswordValid) {
-      return {
-        success: false,
-        message: "Invalid email or password",
-        errors: {
-          password: ["Invalid email or password"],
-        },
-      };
-    }
-
-    // Create session for our application
-    await createSession(auth.userId);
-
     return {
       success: true,
       message: "Signed in successfully",
     };
-  } catch (e) {
-    console.log("Sign in error", e);
+  } catch (error: any) {
+    console.error("Signin error:", error);
     return {
       success: false,
-      message: "An error occurred during sign in",
-      error: "Failed to sign in user",
+      message: error.message || "An error occurred during signin",
     };
   }
 }
 
 // sign out server action
-export async function signOut(): Promise<void> {
-  try {
-    await deleteSession();
-  } catch (error) {
-    console.error("Sign out error:", error);
-    throw new Error("Failed to sign out");
-  } finally {
-    redirect("/login");
-  }
+export async function signOut() {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  redirect("/login");
 }
