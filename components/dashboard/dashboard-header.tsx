@@ -22,7 +22,6 @@ interface CurrentUser {
     role: UserRole;
     id: string;
     email: string;
-    password: string;
     createdAt: Date;
     updatedAt: Date;
     firstName: string;
