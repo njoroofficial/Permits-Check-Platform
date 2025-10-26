@@ -97,3 +97,21 @@ export const getPermitTypeById = async (id: string) => {
     return null;
   }
 };
+
+// fetch application details
+export const getApplicationDetails = async (applicationId: string) => {
+  try {
+    const results = await prisma.application.findUnique({
+      where: { applicationNumber: applicationId },
+    });
+
+    if (!results) {
+      console.log(`No application made for: ${applicationId}`);
+    }
+
+    return results;
+  } catch (error) {
+    console.error("Error fetching application details:", error);
+    return null;
+  }
+};
