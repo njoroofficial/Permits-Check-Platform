@@ -115,3 +115,25 @@ export const getApplicationDetails = async (applicationId: string) => {
     return null;
   }
 };
+
+// fetch an applications done by a specific user
+export const getApplicationsByUserId = async (userId: string) => {
+  "use cache";
+  cacheTag("applications");
+  if (!userId) {
+    console.error("User ID is required");
+    return [];
+  }
+
+  try {
+    const results = await prisma.application.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return results;
+  } catch (error) {
+    console.error("Error fetching applications by user ID:", error);
+    return [];
+  }
+};

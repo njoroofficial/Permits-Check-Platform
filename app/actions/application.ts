@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/dal";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { revalidateTag } from "next/cache";
 
 const businessTypes = [
   "Retail",
@@ -199,6 +200,7 @@ export async function submitBusinessLicense(
     // Revalidate relevant paths
     revalidatePath("/dashboard");
     revalidatePath("/apply");
+    revalidateTag("applications");
 
     return {
       success: true,
