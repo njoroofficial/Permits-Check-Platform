@@ -1,10 +1,10 @@
 import { prisma } from "./db";
-import { cacheTag } from "next/cache";
-import { cache } from "react";
+import { cacheTag, unstable_noStore as noStore } from "next/cache";
 import { createClient } from "./supabase/server";
 
 // Get current user
-export const getCurrentUser = cache(async () => {
+export async function getCurrentUser() {
+  noStore(); // Prevent static prerender caching
   try {
     const supabase = await createClient();
 
@@ -27,7 +27,7 @@ export const getCurrentUser = cache(async () => {
     console.error("Error fetching current user:", error);
     return null;
   }
-});
+}
 
 // Get user by email
 export const getUserByEmail = async (email: string) => {

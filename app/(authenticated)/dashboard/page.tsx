@@ -2,6 +2,7 @@ import { RecentApplications } from "@/components/dashboard/recent-applications";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { getCurrentUser } from "@/lib/dal";
+import { connection } from "next/server";
 import { Suspense } from "react";
 
 // Mock data - handcoded data
@@ -36,6 +37,7 @@ const mockApplications = [
 ];
 
 async function WelcomeSection() {
+  await connection();
   const user = await getCurrentUser();
 
   return (
@@ -73,9 +75,7 @@ export default function DashboardPage() {
       {/* Main Content Grid */}
       <div className="grid gap-8 lg:grid-cols-2">
         <RecentApplications applications={mockApplications} />
-        <Suspense fallback={<div>Loading...</div>}>
-          <QuickActions />
-        </Suspense>
+        <QuickActions />
       </div>
 
       {/* Additional Information */}
