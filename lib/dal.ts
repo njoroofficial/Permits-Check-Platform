@@ -1,5 +1,5 @@
 import { prisma } from "./db";
-import { unstable_cacheTag as cacheTag } from "next/cache";
+import { cacheTag } from "next/cache";
 import { cache } from "react";
 import { createClient } from "./supabase/server";
 

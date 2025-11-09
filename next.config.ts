@@ -2,14 +2,13 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  experimental: {
-    useCache: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
+  reactCompiler: true,
+  cacheComponents: true,
+  experimental: {
+    turbopackFileSystemCacheForDev: true,
   },
 };
 
