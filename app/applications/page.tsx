@@ -1,16 +1,18 @@
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { getCurrentUser } from "@/lib/dal";
+import { redirect } from "next/navigation";
 
 export default async function ApplicationsPage() {
   const user = await getCurrentUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
   return (
-    <div className="min-g-screen bg-background">
+    <div className="min-h-screen bg-background">
       {/* The dashboard header */}
-      {user ? (
-        <DashboardHeader user={user} />
-      ) : (
-        <div className="p-4 bg-muted">Loading user information...</div>
-      )}
+      <DashboardHeader user={user} />
       <main className="container mx-auto px-4 py-8">
         <div>
           <h1 className="text-3xl font-bold">My Application</h1>
