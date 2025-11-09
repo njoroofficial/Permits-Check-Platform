@@ -1,7 +1,7 @@
 "use client";
 
 import SignupForm from "@/components/auth/signup-form";
-import { Shield } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function SignupPage() {
@@ -12,7 +12,12 @@ export default function SignupPage() {
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-3 mb-6">
             <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-              <Shield className="w-7 h-7 text-primary-foreground" />
+              <Image
+                src="/assets/murang`a logo.png"
+                alt="murang`a Logo"
+                width={50}
+                height={50}
+              />
             </div>
             <div className="text-left">
               <h1 className="font-bold text-xl text-balance">

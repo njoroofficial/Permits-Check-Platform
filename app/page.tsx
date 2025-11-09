@@ -17,9 +17,11 @@ import {
   MapPin,
   Phone,
   Shield,
+  Truck,
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 // services data
 const services = [
@@ -55,14 +57,14 @@ const services = [
   {
     title: "Transport License",
     description: "Commercial vehicle and transport service permits",
-    icon: Users,
+    icon: Truck,
     fee: "KES 3,000",
     duration: "7-10 days",
   },
   {
     title: "Environmental Permit",
     description: "Environmental impact assessment and compliance",
-    icon: Shield,
+    icon: Users,
     fee: "KES 7,500",
     duration: "21-30 days",
   },
@@ -156,7 +158,12 @@ export default function HomePage() {
             <div className="flex items-center gap-3">
               {/* county logo div */}
               <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                <Shield className="w-6 h-6 text-primary-foreground" />
+                <Image
+                  src="/assets/murang`a logo.png"
+                  alt="murang`a Logo"
+                  width={50}
+                  height={50}
+                />
               </div>
               {/* county name and system name */}
               <div>
@@ -436,7 +443,12 @@ export default function HomePage() {
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-8 bg-primary-foreground/20 rounded-lg flex items-center justify-center">
-                  <Shield className="w-5 h-5" />
+                  <Image
+                    src="/assets/murang`a logo.png"
+                    alt="murang`a Logo"
+                    width={50}
+                    height={50}
+                  />
                 </div>
                 <div>
                   <h3 className="font-bold">Murang'a County</h3>

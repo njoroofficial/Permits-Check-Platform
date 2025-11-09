@@ -9,9 +9,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Shield, LogOut, User, Settings } from "lucide-react";
+import { LogOut, User, Settings } from "lucide-react";
 import Link from "next/link";
 import { signOut } from "@/app/actions/auth";
+import Image from "next/image";
 // import { getCurrentUser } from "@/app/actions/user";
 // import { useEffect, useState } from "react";
 
@@ -62,7 +63,12 @@ export function DashboardHeader({ user }: CurrentUser) {
         <div className="flex items-center justify-between">
           <Link href={dashboardLink} className="flex items-center gap-3">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <Shield className="w-6 h-6 text-primary-foreground" />
+              <Image
+                src="/assets/murang`a logo.png"
+                alt="murang`a Logo"
+                width={50}
+                height={50}
+              />
             </div>
             <div>
               <h1 className="font-bold text-lg text-balance">
