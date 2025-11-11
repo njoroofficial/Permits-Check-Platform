@@ -56,7 +56,7 @@ export function ApplicationReviewCard({
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
               <AvatarFallback className="bg-primary/10 text-primary">
-                {application.applicantName.charAt(0).toUpperCase()}
+                {application.applicantName.charAt(0).toUpperCase() || "?"}
               </AvatarFallback>
             </Avatar>
             <div>
