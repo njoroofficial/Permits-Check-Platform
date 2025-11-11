@@ -8,11 +8,19 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FileText, Eye } from "lucide-react";
+import Link from "next/link";
 
 interface Application {
   id: string;
   type: string;
-  status: "pending" | "approved" | "rejected" | "under-review";
+  status:
+    | "pending"
+    | "approved"
+    | "rejected"
+    | "under-review"
+    | "draft"
+    | "payment-pending"
+    | "completed";
   submittedDate: string;
   fee: string;
 }
@@ -26,6 +34,9 @@ const statusColors = {
   "under-review": "bg-blue-100 text-blue-800",
   approved: "bg-green-100 text-green-800",
   rejected: "bg-red-100 text-red-800",
+  draft: "bg-gray-100 text-gray-800",
+  "payment-pending": "bg-orange-100 text-orange-800",
+  completed: "bg-emerald-100 text-emerald-800",
 };
 
 export function RecentApplications({ applications }: RecentApplicationsProps) {
@@ -45,7 +56,9 @@ export function RecentApplications({ applications }: RecentApplicationsProps) {
           <div className="text-center py-8">
             <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground mb-4">No applications yet</p>
-            <Button>Start Your First Application</Button>
+            <Link href="/apply">
+              <Button>Start Your First Application</Button>
+            </Link>
           </div>
         ) : (
           <div className="space-y-4">
@@ -68,10 +81,12 @@ export function RecentApplications({ applications }: RecentApplicationsProps) {
                     Submitted: {app.submittedDate} • Fee: {app.fee}
                   </div>
                 </div>
-                <Button variant="outline" size="sm">
-                  <Eye className="w-4 h-4 mr-2" />
-                  View
-                </Button>
+                <Link href={`/applications/${app.id}`}>
+                  <Button variant="outline" size="sm">
+                    <Eye className="w-4 h-4 mr-2" />
+                    View
+                  </Button>
+                </Link>
               </div>
             ))}
           </div>

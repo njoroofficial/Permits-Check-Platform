@@ -1,6 +1,35 @@
 import { prisma } from "./db";
 import { cacheTag, unstable_noStore as noStore } from "next/cache";
 import { createClient } from "./supabase/server";
+import { ApplicationStatus } from "./generated/prisma";
+
+// TypeScript interfaces for dashboard data
+export interface ApplicationSummary {
+  id: string;
+  type: string;
+  status:
+    | "pending"
+    | "approved"
+    | "rejected"
+    | "under-review"
+    | "draft"
+    | "payment-pending"
+    | "completed";
+  submittedDate: string;
+  fee: string;
+}
+
+export interface DashboardStats {
+  total: number;
+  pending: number;
+  approved: number;
+  rejected: number;
+}
+
+export interface DashboardData {
+  stats: DashboardStats;
+  recent: ApplicationSummary[];
+}
 
 // Get current user
 export async function getCurrentUser() {
@@ -198,3 +227,74 @@ export const getApplicationByNumber = async (applicationNumber: string) => {
     return null;
   }
 };
+
+// Helper to map ApplicationStatus to dashboard status
+function mapStatus(status: ApplicationStatus): ApplicationSummary["status"] {
+  const statusMap: Record<ApplicationStatus, ApplicationSummary["status"]> = {
+    DRAFT: "draft",
+    SUBMITTED: "pending",
+    UNDER_REVIEW: "under-review",
+    APPROVED: "approved",
+    REJECTED: "rejected",
+    PAYMENT_PENDING: "payment-pending",
+    COMPLETED: "completed",
+  };
+  return statusMap[status];
+}
+
+// Get dashboard data for a specific user
+export async function getDashboardData(userId: string): Promise<DashboardData> {
+  "use cache";
+  cacheTag("dashboard-data", `user-${userId}`);
+
+  if (!userId) {
+    throw new Error("User ID is required");
+  }
+
+  try {
+    // Fetch all applications for the user with permit type info
+    const applications = await prisma.application.findMany({
+      where: { userId },
+      include: {
+        permitType: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    // Calculate stats aggregates
+    const stats: DashboardStats = {
+      total: applications.length,
+      pending: applications.filter(
+        (app) => app.status === "SUBMITTED" || app.status === "UNDER_REVIEW"
+      ).length,
+      approved: applications.filter(
+        (app) => app.status === "APPROVED" || app.status === "COMPLETED"
+      ).length,
+      rejected: applications.filter((app) => app.status === "REJECTED").length,
+    };
+
+    // Map to ApplicationSummary format (recent 5)
+    const recent: ApplicationSummary[] = applications
+      .slice(0, 5)
+      .map((app) => ({
+        id: app.applicationNumber,
+        type: app.permitType.name,
+        status: mapStatus(app.status),
+        submittedDate: app.submittedAt
+          ? new Date(app.submittedAt).toISOString().split("T")[0]
+          : new Date(app.createdAt).toISOString().split("T")[0],
+        fee: `KES ${parseFloat(
+          app.permitType.fee.toString()
+        ).toLocaleString()}`,
+      }));
+
+    return { stats, recent };
+  } catch (error) {
+    console.error("Error fetching dashboard data:", error);
+    // Return empty data on error
+    return {
+      stats: { total: 0, pending: 0, approved: 0, rejected: 0 },
+      recent: [],
+    };
+  }
+}

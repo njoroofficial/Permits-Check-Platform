@@ -1,49 +1,24 @@
 import { RecentApplications } from "@/components/dashboard/recent-applications";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { QuickActions } from "@/components/dashboard/quick-actions";
-import { getCurrentUser } from "@/lib/dal";
+import { getCurrentUser, getDashboardData } from "@/lib/dal";
 import { connection } from "next/server";
 import { Suspense } from "react";
-
-// Mock data - handcoded data
-const mockStats = {
-  total: 3,
-  pending: 1,
-  approved: 2,
-  rejected: 0,
-};
-const mockApplications = [
-  {
-    id: "1",
-    type: "Business License",
-    status: "approved" as const,
-    submittedDate: "2024-01-15",
-    fee: "KES 2,500",
-  },
-  {
-    id: "2",
-    type: "Building Permit",
-    status: "under-review" as const,
-    submittedDate: "2024-01-20",
-    fee: "KES 5,000",
-  },
-  {
-    id: "3",
-    type: "Food Handler's Permit",
-    status: "approved" as const,
-    submittedDate: "2024-01-10",
-    fee: "KES 1,000",
-  },
-];
+import { redirect } from "next/navigation";
 
 async function WelcomeSection() {
   await connection();
   const user = await getCurrentUser();
 
+  // Guard: Redirect if no user found
+  if (!user) {
+    redirect("/login");
+  }
+
   return (
     <div className="mb-8">
       <h1 className="text-3xl font-bold mb-2">
-        Welcome back, {user?.firstName} {user?.lastName}!
+        Welcome back, {user.firstName} {user.lastName}!
       </h1>
       <p className="text-muted-foreground">
         Manage your permits and licenses from your personal dashboard
@@ -52,7 +27,18 @@ async function WelcomeSection() {
   );
 }
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  // Fetch authenticated user
+  const user = await getCurrentUser();
+
+  // Guard: Redirect if no user
+  if (!user) {
+    redirect("/login");
+  }
+
+  // Fetch real dashboard data from database
+  const dashboardData = await getDashboardData(user.id);
+
   return (
     <main className="container mx-auto px-4 py-8">
       {/* Welcome Section */}
@@ -67,14 +53,15 @@ export default function DashboardPage() {
         <WelcomeSection />
       </Suspense>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - Using real data */}
       <div className="mb-8">
-        <StatsCards stats={mockStats} />
+        <StatsCards stats={dashboardData.stats} />
       </div>
 
       {/* Main Content Grid */}
       <div className="grid gap-8 lg:grid-cols-2">
-        <RecentApplications applications={mockApplications} />
+        {/* Recent Applications - Using real data */}
+        <RecentApplications applications={dashboardData.recent} />
         <QuickActions />
       </div>
 
