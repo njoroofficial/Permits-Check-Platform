@@ -137,3 +137,54 @@ export const getApplicationsByUserId = async (userId: string) => {
     return [];
   }
 };
+
+// fetch a single application by application number with all relations
+export const getApplicationByNumber = async (applicationNumber: string) => {
+  if (!applicationNumber) {
+    console.error("Application number is required");
+    return null;
+  }
+
+  try {
+    const result = await prisma.application.findUnique({
+      where: { applicationNumber },
+      include: {
+        permitType: true,
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+            phoneNumber: true,
+          },
+        },
+        documents: {
+          orderBy: { createdAt: "desc" },
+        },
+        statusHistory: {
+          orderBy: { createdAt: "asc" },
+          include: {
+            updatedBy: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+        assignedOfficer: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    return result;
+  } catch (error) {
+    console.error("Error fetching application by number:", error);
+    return null;
+  }
+};
