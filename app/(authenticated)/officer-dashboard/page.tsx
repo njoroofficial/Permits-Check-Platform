@@ -84,7 +84,7 @@ export default function OfficerDashboardPage() {
     const matchesStatus = statusFilter === "all" || app.status === statusFilter;
     const matchesType =
       typeFilter === "all" ||
-      app.applicationType.toLowerCase().includes(typeFilter.toLowerCase());
+      app.applicationType.toLowerCase().replace(/['\s]/g, "-") === typeFilter;
     const matchesPriority =
       priorityFilter === "all" || app.priority === priorityFilter;
 
