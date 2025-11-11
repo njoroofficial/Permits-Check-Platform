@@ -93,7 +93,7 @@ export default function OfficerDashboardPage() {
 
   const activeFiltersCount = [statusFilter, typeFilter, priorityFilter].filter(
     (filter) => filter !== "all"
-  ).length;
+  ).length + (searchTerm ? 1 : 0);
 
   const handleClearFilters = () => {
     setStatusFilter("all");
