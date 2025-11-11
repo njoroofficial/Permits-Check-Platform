@@ -128,10 +128,20 @@ export const getApplicationsByUserId = async (userId: string) => {
   try {
     const results = await prisma.application.findMany({
       where: { userId },
+      include: {
+        permitType: true,
+      },
       orderBy: { createdAt: "desc" },
     });
 
-    return results;
+    // Serialize Decimal to string before returning
+    return results.map((result) => ({
+      ...result,
+      permitType: {
+        ...result.permitType,
+        fee: result.permitType.fee.toString(), // Convert Decimal to string
+      },
+    }));
   } catch (error) {
     console.error("Error fetching applications by user ID:", error);
     return [];

@@ -3,10 +3,19 @@
 import { useState, useMemo } from "react";
 import { ApplicationsFilter } from "@/components/application/applications-filter";
 import { ApplicationCard } from "@/components/application/application-card";
-import { Application, PermitType } from "@/lib/generated/prisma";
+import {
+  Application,
+  PermitType,
+  ApplicationStatus,
+} from "@/lib/generated/prisma";
 
-type ApplicationWithPermit = Application & {
-  permitType: PermitType;
+// Serialized type for client component (Decimal converted to string)
+type SerializedPermitType = Omit<PermitType, "fee"> & {
+  fee: string;
+};
+
+type ApplicationWithPermit = Omit<Application, "permitType"> & {
+  permitType: SerializedPermitType;
 };
 
 interface ApplicationsListProps {

@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/dal";
-import { prisma } from "@/lib/db";
+import { getCurrentUser, getApplicationsByUserId } from "@/lib/dal";
 import { ApplicationsList } from "@/components/application/applications-list";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -14,18 +13,12 @@ export default async function ApplicationsPage() {
     redirect("/login");
   }
 
-  // Fetch user's applications with permit type
+  // Fetch user's applications with permit type (already serialized in dal.ts)
   let applications;
   let error = null;
 
   try {
-    applications = await prisma.application.findMany({
-      where: { userId: user.id },
-      include: {
-        permitType: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    applications = await getApplicationsByUserId(user.id);
   } catch (err) {
     console.error("Error fetching applications:", err);
     error = "Failed to load applications. Please try again later.";
