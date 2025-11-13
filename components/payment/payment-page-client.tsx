@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PaymentMethodSelector } from "@/components/payment/payment-method-selector";
 import { PaymentSuccess } from "@/components/payment/payment-success";
 
@@ -17,11 +17,32 @@ export function PaymentPageClient({
 }: PaymentPageClientProps) {
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [paymentData, setPaymentData] = useState<any>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    console.log("PaymentPageClient Mounted!");
+    console.log("PaymentPageClient Props:", {
+      applicationId,
+      permitFee: permit?.fee,
+      businessType: applicationDetails?.businessType,
+      hasPermit: !!permit,
+      hasApplicationDetails: !!applicationDetails,
+    });
+  }, [applicationId, permit, applicationDetails]);
 
   const handlePaymentComplete = (data: any) => {
     setPaymentData(data);
     setPaymentCompleted(true);
   };
+
+  if (!mounted) {
+    return (
+      <main className="container mx-auto px-4 py-8">
+        <div className="text-center">Loading payment page...</div>
+      </main>
+    );
+  }
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -38,11 +59,26 @@ export function PaymentPageClient({
         </p>
       </div>
 
+      {/* Debug Info - Remove after testing */}
+      {!paymentCompleted && (
+        <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded text-sm">
+          <p>
+            <strong>Debug Info:</strong>
+          </p>
+          <p>Permit Fee: {permit?.fee || "Not loaded"}</p>
+          <p>Application ID: {applicationId || "Not loaded"}</p>
+          <p>
+            Business Type: {applicationDetails?.businessType || "Not loaded"}
+          </p>
+          <p>Component Mounted: {mounted ? "Yes" : "No"}</p>
+        </div>
+      )}
+
       {paymentCompleted ? (
         <PaymentSuccess paymentData={paymentData} />
       ) : (
         <PaymentMethodSelector
-          amount={permit?.fee}
+          amount={permit?.fee || "KES 0"}
           applicationId={applicationId}
           onPaymentComplete={handlePaymentComplete}
         />

@@ -45,10 +45,38 @@ async function PaymentContent({
     notFound();
   }
 
+  // Format permit fee for display
+  const formattedPermit = {
+    id: permit.id,
+    name: permit.name,
+    description: permit.description,
+    fee: `KES ${parseFloat(permit.fee.toString()).toLocaleString()}`,
+  };
+
+  // Serialize application details for client component
+  const serializedApplicationDetails = {
+    id: applicationDetails.id,
+    applicationNumber: applicationDetails.applicationNumber,
+    businessName: applicationDetails.businessName,
+    businessType: applicationDetails.businessType,
+    businessAddress: applicationDetails.businessAddress,
+    status: applicationDetails.status,
+    permitType: {
+      name: applicationDetails.permitType.name,
+      fee: applicationDetails.permitType.fee.toString(),
+    },
+  };
+
+  console.log("Payment Page Data:", {
+    applicationId,
+    permitFee: formattedPermit.fee,
+    businessType: applicationDetails.businessType,
+  });
+
   return (
     <PaymentPageClient
-      applicationDetails={applicationDetails}
-      permit={permit}
+      applicationDetails={serializedApplicationDetails}
+      permit={formattedPermit}
       applicationId={applicationId}
     />
   );
