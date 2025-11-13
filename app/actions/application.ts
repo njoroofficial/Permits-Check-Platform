@@ -210,7 +210,7 @@ export async function submitBusinessLicense(
     return {
       success: true,
       message: "Application submitted successfully",
-      applicationId: application.id,
+      applicationId: application.applicationNumber,
     };
   } catch (error) {
     // Enhanced error logging

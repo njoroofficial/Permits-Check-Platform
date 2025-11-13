@@ -30,10 +30,9 @@ async function DashboardContent() {
   // Wait for connection to be established before accessing dynamic data
   await connection();
 
-  // Fetch authenticated user
+  // Fetch authenticated user (already validated in layout)
   const user = await getCurrentUser();
 
-  // Guard: Redirect if no user
   if (!user) {
     redirect("/login");
   }

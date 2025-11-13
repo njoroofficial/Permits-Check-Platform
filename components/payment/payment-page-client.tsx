@@ -93,21 +93,6 @@ export function PaymentPageClient({
         </p>
       </div>
 
-      {/* Debug Info - Remove after testing */}
-      {!paymentCompleted && (
-        <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded text-sm">
-          <p>
-            <strong>Debug Info:</strong>
-          </p>
-          <p>Permit Fee: {permit?.fee || "Not loaded"}</p>
-          <p>Application ID: {applicationId || "Not loaded"}</p>
-          <p>
-            Business Type: {applicationDetails?.businessType || "Not loaded"}
-          </p>
-          <p>Component Mounted: {mounted ? "Yes" : "No"}</p>
-        </div>
-      )}
-
       {paymentCompleted && paymentData ? (
         <PaymentSuccess paymentData={paymentData} />
       ) : (

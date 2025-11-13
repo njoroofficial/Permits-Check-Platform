@@ -1,14 +1,28 @@
-import { getCurrentUser } from "@/lib/dal";
-import { DashboardHeader } from "@/components/dashboard/dashboard-header";
-import { connection } from "next/server";
+import type React from "react";
 import { Suspense } from "react";
+import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+import { getCurrentUser } from "@/lib/dal";
+import { redirect } from "next/navigation";
 
-// Authentication check is handled by middleware (proxy.ts)
-
-async function Header() {
-  await connection();
+async function AuthenticatedContent({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  // Get current user for header
   const user = await getCurrentUser();
-  return user ? <DashboardHeader user={user} /> : null;
+
+  // Redirect to login if no user
+  if (!user) {
+    redirect("/login");
+  }
+
+  return (
+    <>
+      <DashboardHeader user={user} />
+      {children}
+    </>
+  );
 }
 
 export default function AuthenticatedLayout({
@@ -18,10 +32,18 @@ export default function AuthenticatedLayout({
 }) {
   return (
     <div className="min-h-screen bg-background">
-      <Suspense fallback={<div className="h-16 border-b bg-background" />}>
-        <Header />
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center">
+              <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+              <p className="text-muted-foreground">Loading...</p>
+            </div>
+          </div>
+        }
+      >
+        <AuthenticatedContent>{children}</AuthenticatedContent>
       </Suspense>
-      {children}
     </div>
   );
 }

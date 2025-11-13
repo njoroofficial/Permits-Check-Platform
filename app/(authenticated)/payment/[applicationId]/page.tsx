@@ -2,7 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { getCurrentUser, getPermitTypeById } from "@/lib/dal";
 import { prisma } from "@/lib/db";
 import { PaymentPageClient } from "@/components/payment/payment-page-client";
-import { Suspense, use } from "react";
+import { Suspense } from "react";
 
 interface PaymentPageProps {
   params: Promise<{ applicationId: string }>;
@@ -15,8 +15,9 @@ async function PaymentContent({
 }) {
   const { applicationId } = await paramsPromise;
 
-  // Get current user
+  // Get current user (already validated in layout, but needed for ownership check)
   const user = await getCurrentUser();
+
   if (!user) {
     redirect("/login");
   }
@@ -80,12 +81,6 @@ async function PaymentContent({
       fee: applicationDetails.permitType.fee.toString(),
     },
   };
-
-  console.log("Payment Page Data:", {
-    applicationId,
-    permitFee: formattedPermit.fee,
-    businessType: applicationDetails.businessType,
-  });
 
   return (
     <PaymentPageClient
