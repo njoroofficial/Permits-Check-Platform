@@ -7,12 +7,13 @@ import {
   DashboardStats,
   DashboardData,
 } from "@/types/dashboard";
+import { User } from "@/types/user";
 
 // Re-export types for backward compatibility
 export type { ApplicationSummary, DashboardStats, DashboardData };
 
-// Get current user
-export async function getCurrentUser() {
+// Get current user with dates serialized to ISO strings
+export async function getCurrentUser(): Promise<User | null> {
   try {
     const supabase = await createClient();
 
@@ -30,7 +31,16 @@ export async function getCurrentUser() {
       where: { id: authUser.id },
     });
 
-    return user;
+    if (!user) {
+      return null;
+    }
+
+    // Serialize dates to ISO strings for client components
+    return {
+      ...user,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString(),
+    };
   } catch (error) {
     console.error("Error fetching current user:", error);
     return null;
@@ -71,10 +81,12 @@ export const getPermitTypes = async () => {
       },
     });
 
-    // Serialize Decimal to string before returning
+    // Serialize Decimal to string and dates to ISO strings for client components
     return results.map((result) => ({
       ...result,
       fee: result.fee.toString(), // Convert Decimal to string
+      createdAt: result.createdAt.toISOString(),
+      updatedAt: result.updatedAt.toISOString(),
     }));
   } catch (error) {
     console.log("Error fetching Permit Types");
@@ -95,10 +107,12 @@ export const getPermitTypeById = async (id: string) => {
       return null;
     }
 
-    // Serialize Decimal to string before returning
+    // Serialize Decimal to string and dates to ISO strings for client components
     return {
       ...result,
       fee: result.fee.toString(), // Convert Decimal to string
+      createdAt: result.createdAt.toISOString(),
+      updatedAt: result.updatedAt.toISOString(),
     };
   } catch (error) {
     console.error("Error fetching permit type by ID:", error);

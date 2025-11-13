@@ -4,6 +4,7 @@ import { UserRole } from "@/lib/generated/prisma";
 export type { UserRole };
 
 // User interface matching the database schema with necessary fields for components
+// Note: createdAt and updatedAt are ISO string timestamps for server→client serialization
 export interface User {
   id: string;
   email: string;
@@ -13,8 +14,8 @@ export interface User {
   idNumber: string | null;
   role: UserRole;
   isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string; // ISO timestamp string
+  updatedAt: string; // ISO timestamp string
 }
 
 // Props interface for components that need current user

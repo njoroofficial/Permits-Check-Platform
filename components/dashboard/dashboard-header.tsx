@@ -13,11 +13,7 @@ import { LogOut, User as UserIcon, Settings } from "lucide-react";
 import Link from "next/link";
 import { signOut } from "@/app/actions/auth";
 import Image from "next/image";
-import { User } from "@/types/user";
-
-interface CurrentUserProps {
-  user: User;
-}
+import { User, CurrentUserProps } from "@/types/user";
 
 export function DashboardHeader({ user }: CurrentUserProps) {
   //   handle user logout
