@@ -30,15 +30,15 @@ async function PaymentContent({
         permitType: true,
       },
     });
-
-    if (!applicationDetails) {
-      notFound();
-    }
   } catch (error) {
     console.error("Error fetching application details:", error);
     throw new Error(
       "Failed to load application details. Please try again later."
     );
+  }
+
+  if (!applicationDetails) {
+    notFound();
   }
 
   // Verify user owns this application
@@ -50,12 +50,12 @@ async function PaymentContent({
   let permit;
   try {
     permit = await getPermitTypeById(applicationDetails.permitTypeId);
-
-    if (!permit) {
-      notFound();
-    }
   } catch (error) {
     console.error("Error fetching permit type:", error);
+    throw new Error("Failed to load permit details. Please try again later.");
+  }
+
+  if (!permit) {
     notFound();
   }
 
