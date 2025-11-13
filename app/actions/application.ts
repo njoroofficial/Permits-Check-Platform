@@ -160,7 +160,7 @@ export async function submitBusinessLicense(
         return await tx.application.create({
           data: {
             applicationNumber: applicationId,
-            status: "DRAFT",
+            status: "SUBMITTED",
             user: {
               connect: { id: user.id },
             },

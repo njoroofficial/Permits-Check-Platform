@@ -9,14 +9,20 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, Download, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
+// Payment data interface
+export interface PaymentData {
+  method: string;
+  amount: string;
+  applicationId: string;
+  transactionId: string;
+  status: string;
+  timestamp: string;
+  phoneNumber?: string;
+  cardLast4?: string;
+}
+
 interface PaymentSuccessProps {
-  paymentData: {
-    method: string;
-    amount: string;
-    applicationId: string;
-    transactionId: string;
-    timestamp: string;
-  };
+  paymentData: PaymentData;
 }
 
 export function PaymentSuccess({ paymentData }: PaymentSuccessProps) {

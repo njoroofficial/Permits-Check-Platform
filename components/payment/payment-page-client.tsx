@@ -4,9 +4,43 @@ import { useState, useEffect } from "react";
 import { PaymentMethodSelector } from "@/components/payment/payment-method-selector";
 import { PaymentSuccess } from "@/components/payment/payment-success";
 
+// Payment data interface
+export interface PaymentData {
+  method: string;
+  amount: string;
+  applicationId: string;
+  transactionId: string;
+  status: string;
+  timestamp: string;
+  phoneNumber?: string;
+  cardLast4?: string;
+}
+
+// Application details interface
+interface ApplicationDetails {
+  id: string;
+  applicationNumber: string;
+  businessName: string | null;
+  businessType: string | null;
+  businessAddress: string | null;
+  status: string;
+  permitType: {
+    name: string;
+    fee: string;
+  };
+}
+
+// Permit type interface
+interface Permit {
+  id: string;
+  name: string;
+  description: string | null;
+  fee: string;
+}
+
 interface PaymentPageClientProps {
-  applicationDetails: any;
-  permit: any;
+  applicationDetails: ApplicationDetails;
+  permit: Permit;
   applicationId: string;
 }
 
@@ -16,7 +50,7 @@ export function PaymentPageClient({
   applicationId,
 }: PaymentPageClientProps) {
   const [paymentCompleted, setPaymentCompleted] = useState(false);
-  const [paymentData, setPaymentData] = useState<any>(null);
+  const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -31,7 +65,7 @@ export function PaymentPageClient({
     });
   }, [applicationId, permit, applicationDetails]);
 
-  const handlePaymentComplete = (data: any) => {
+  const handlePaymentComplete = (data: PaymentData) => {
     setPaymentData(data);
     setPaymentCompleted(true);
   };
@@ -74,7 +108,7 @@ export function PaymentPageClient({
         </div>
       )}
 
-      {paymentCompleted ? (
+      {paymentCompleted && paymentData ? (
         <PaymentSuccess paymentData={paymentData} />
       ) : (
         <PaymentMethodSelector

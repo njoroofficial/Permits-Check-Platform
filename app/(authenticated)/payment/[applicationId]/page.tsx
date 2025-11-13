@@ -22,15 +22,23 @@ async function PaymentContent({
   }
 
   // Fetch application details
-  const applicationDetails = await prisma.application.findUnique({
-    where: { applicationNumber: applicationId },
-    include: {
-      permitType: true,
-    },
-  });
+  let applicationDetails;
+  try {
+    applicationDetails = await prisma.application.findUnique({
+      where: { applicationNumber: applicationId },
+      include: {
+        permitType: true,
+      },
+    });
 
-  if (!applicationDetails) {
-    notFound();
+    if (!applicationDetails) {
+      notFound();
+    }
+  } catch (error) {
+    console.error("Error fetching application details:", error);
+    throw new Error(
+      "Failed to load application details. Please try again later."
+    );
   }
 
   // Verify user owns this application
@@ -39,9 +47,15 @@ async function PaymentContent({
   }
 
   // Fetch permit type
-  const permit = await getPermitTypeById(applicationDetails.permitTypeId);
+  let permit;
+  try {
+    permit = await getPermitTypeById(applicationDetails.permitTypeId);
 
-  if (!permit) {
+    if (!permit) {
+      notFound();
+    }
+  } catch (error) {
+    console.error("Error fetching permit type:", error);
     notFound();
   }
 
