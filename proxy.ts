@@ -35,9 +35,10 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const pathname = request.nextUrl.pathname;
+
   // Define public routes that don't require authentication
   const publicRoutes = [
-    "/",
     "/login",
     "/signup",
     "/assets",
@@ -45,9 +46,12 @@ export async function proxy(request: NextRequest) {
     "/favicon.ico",
   ];
 
-  const isPublicRoute = publicRoutes.some((route) =>
-    request.nextUrl.pathname.startsWith(route)
-  );
+  // Check if the current route is public
+  const isPublicRoute =
+    pathname === "/" || // Exact match for root
+    publicRoutes.some(
+      (route) => pathname === route || pathname.startsWith(route + "/")
+    );
 
   // Protected routes - redirect to login if not authenticated
   if (!user && !isPublicRoute) {
@@ -57,8 +61,10 @@ export async function proxy(request: NextRequest) {
   // Redirect authenticated users away from auth pages
   if (
     user &&
-    (request.nextUrl.pathname.startsWith("/login") ||
-      request.nextUrl.pathname.startsWith("/signup"))
+    (pathname === "/login" ||
+      pathname.startsWith("/login/") ||
+      pathname === "/signup" ||
+      pathname.startsWith("/signup/"))
   ) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }

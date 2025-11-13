@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface ApproveModalProps {
   isOpen: boolean;
@@ -47,7 +48,10 @@ export function ApproveModal({
       onClose();
     } catch (error) {
       console.error("Error approving application:", error);
-      alert("Failed to approve application. Please try again.");
+      toast.error("Failed to approve application", {
+        description:
+          "Please try again or contact support if the problem persists.",
+      });
     } finally {
       setIsLoading(false);
     }
