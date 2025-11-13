@@ -12,7 +12,7 @@ async function main() {
         name: "Business License",
         description:
           "License required to operate a business within Murang'a County",
-        fee: 5000.0,
+        fee: 2500.0,
         isActive: true,
       },
     }),
@@ -22,7 +22,7 @@ async function main() {
       create: {
         name: "Building Permit",
         description: "Permit required for construction and building activities",
-        fee: 15000.0,
+        fee: 5000.0,
         isActive: true,
       },
     }),
@@ -33,7 +33,7 @@ async function main() {
         name: "Food Handler's License",
         description:
           "License for individuals handling food in commercial establishments",
-        fee: 2000.0,
+        fee: 1000.0,
         isActive: true,
       },
     }),
@@ -43,7 +43,7 @@ async function main() {
       create: {
         name: "Liquor License",
         description: "License to sell alcoholic beverages",
-        fee: 25000.0,
+        fee: 10000.0,
         isActive: true,
       },
     }),
@@ -53,7 +53,7 @@ async function main() {
       create: {
         name: "Transport License",
         description: "License for public transport vehicles",
-        fee: 8000.0,
+        fee: 3000.0,
         isActive: true,
       },
     }),

@@ -75,7 +75,7 @@ const applicationProcesses = [
   {
     step: "01",
     title: "Create Account",
-    description: "Register with your ID number and contact information",
+    description: "Register with your personal information",
   },
   {
     step: "02",
@@ -225,7 +225,7 @@ export default function HomePage() {
           {/* Application buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="text-lg px-8">
-              Start Application
+              <Link href="/login">Start Application</Link>
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
             <Button
@@ -233,7 +233,7 @@ export default function HomePage() {
               variant="outline"
               className="text-lg px-8 bg-transparent"
             >
-              Track Application
+              <Link href="/login">Track Application</Link>
             </Button>
           </div>
         </div>
@@ -279,7 +279,9 @@ export default function HomePage() {
                       {service.duration}
                     </div>
                   </div>
-                  <Button className="w-full">Apply Now</Button>
+                  <Button className="w-full">
+                    <Link href="/login">Apply Now</Link>
+                  </Button>
                 </CardContent>
               </Card>
             ))}
