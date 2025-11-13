@@ -9,31 +9,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, User, Settings } from "lucide-react";
+import { LogOut, User as UserIcon, Settings } from "lucide-react";
 import Link from "next/link";
 import { signOut } from "@/app/actions/auth";
 import Image from "next/image";
-// import { getCurrentUser } from "@/app/actions/user";
-// import { useEffect, useState } from "react";
+import { User } from "@/types/user";
 
-type UserRole = "CITIZEN" | "OFFICER";
-
-interface CurrentUser {
-  user: {
-    role: UserRole;
-    id: string;
-    email: string;
-    createdAt: Date;
-    updatedAt: Date;
-    firstName: string;
-    lastName: string;
-    phoneNumber: string | null;
-    idNumber: string | null;
-    isActive: boolean;
-  };
+interface CurrentUserProps {
+  user: User;
 }
 
-export function DashboardHeader({ user }: CurrentUser) {
+export function DashboardHeader({ user }: CurrentUserProps) {
   //   handle user logout
   const handleLogout = async () => {
     await signOut();
@@ -119,7 +105,7 @@ export function DashboardHeader({ user }: CurrentUser) {
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
-                  <User className="mr-2 h-4 w-4" />
+                  <UserIcon className="mr-2 h-4 w-4" />
                   Profile
                 </DropdownMenuItem>
                 <DropdownMenuItem>

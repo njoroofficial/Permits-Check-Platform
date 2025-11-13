@@ -8,18 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Download, ArrowRight } from "lucide-react";
 import Link from "next/link";
-
-// Payment data interface
-export interface PaymentData {
-  method: string;
-  amount: string;
-  applicationId: string;
-  transactionId: string;
-  status: string;
-  timestamp: string;
-  phoneNumber?: string;
-  cardLast4?: string;
-}
+import { PaymentData } from "@/types/payment";
 
 interface PaymentSuccessProps {
   paymentData: PaymentData;

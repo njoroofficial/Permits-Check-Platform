@@ -1,13 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import { FileText, Clock, CheckCircle, XCircle } from "lucide-react";
+import { DashboardStats } from "@/types/dashboard";
 
 interface StatsCardsProps {
-  stats: {
-    total: number;
-    pending: number;
-    approved: number;
-    rejected: number;
-  };
+  stats: DashboardStats;
 }
 
 export function StatsCards({ stats }: StatsCardsProps) {
@@ -33,7 +29,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
     {
       title: "Rejected",
       value: stats.rejected,
-      icon: AlertCircle,
+      icon: XCircle,
       description: "Requires attention",
     },
   ];

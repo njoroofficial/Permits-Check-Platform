@@ -25,17 +25,8 @@ import { ApplicationStepper } from "./application-stepper";
 import { DocumentUpload } from "./document-upload";
 import { FormState, submitBusinessLicense } from "@/app/actions/application";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { PermitType } from "@/types/permit";
 
-// Defining permit types
-interface PermitType {
-  fee: string;
-  name: string;
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
-  isActive: boolean;
-  description: string | null;
-}
 interface BusinessLicenseFormProps {
   permit: PermitType;
 }

@@ -1,10 +1,6 @@
 import { CheckCircle, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-interface Step {
-  title: string;
-  description: string;
-}
+import { Step } from "@/types/application";
 
 interface ApplicationStepperProps {
   steps: Step[];

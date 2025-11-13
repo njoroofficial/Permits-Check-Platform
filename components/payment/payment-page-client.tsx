@@ -3,18 +3,8 @@
 import { useState, useEffect } from "react";
 import { PaymentMethodSelector } from "@/components/payment/payment-method-selector";
 import { PaymentSuccess } from "@/components/payment/payment-success";
-
-// Payment data interface
-export interface PaymentData {
-  method: string;
-  amount: string;
-  applicationId: string;
-  transactionId: string;
-  status: string;
-  timestamp: string;
-  phoneNumber?: string;
-  cardLast4?: string;
-}
+import { PaymentData } from "@/types/payment";
+import { PermitInfo } from "@/types/permit";
 
 // Application details interface
 interface ApplicationDetails {
@@ -30,17 +20,9 @@ interface ApplicationDetails {
   };
 }
 
-// Permit type interface
-interface Permit {
-  id: string;
-  name: string;
-  description: string | null;
-  fee: string;
-}
-
 interface PaymentPageClientProps {
   applicationDetails: ApplicationDetails;
-  permit: Permit;
+  permit: PermitInfo;
   applicationId: string;
 }
 

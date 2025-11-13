@@ -7,16 +7,10 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
+import { OfficerStats as OfficerStatsType } from "@/types/dashboard";
 
 interface OfficerStatsProps {
-  stats: {
-    totalApplications: number;
-    pendingReview: number;
-    approvedToday: number;
-    rejectedToday: number;
-    averageProcessingTime: number;
-    activeApplicants: number;
-  };
+  stats: OfficerStatsType;
 }
 
 export function OfficerStats({ stats }: OfficerStatsProps) {

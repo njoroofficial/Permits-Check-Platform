@@ -11,31 +11,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Eye, CheckCircle, XCircle, Clock } from "lucide-react";
-
-interface Application {
-  id: string;
-  applicantName: string;
-  applicationType: string;
-  status: "pending" | "under-review" | "approved" | "rejected";
-  submittedDate: string;
-  fee: string;
-  priority: "high" | "medium" | "low";
-  daysRemaining: number;
-}
+import { OfficerApplication, statusColors } from "@/types/application";
 
 interface ApplicationReviewCardProps {
-  application: Application;
+  application: OfficerApplication;
   onReview: (id: string) => void;
   onApprove: (id: string, applicantName: string) => void;
   onReject: (id: string, applicantName: string) => void;
 }
-
-const statusColors = {
-  pending: "bg-yellow-100 text-yellow-800",
-  "under-review": "bg-blue-100 text-blue-800",
-  approved: "bg-green-100 text-green-800",
-  rejected: "bg-red-100 text-red-800",
-};
 
 const priorityColors = {
   high: "bg-red-100 text-red-800",

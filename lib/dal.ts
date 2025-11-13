@@ -2,34 +2,14 @@ import { prisma } from "./db";
 import { cacheTag } from "next/cache";
 import { createClient } from "./supabase/server";
 import { ApplicationStatus } from "./generated/prisma";
+import {
+  ApplicationSummary,
+  DashboardStats,
+  DashboardData,
+} from "@/types/dashboard";
 
-// TypeScript interfaces for dashboard data
-export interface ApplicationSummary {
-  id: string;
-  type: string;
-  status:
-    | "pending"
-    | "approved"
-    | "rejected"
-    | "under-review"
-    | "draft"
-    | "payment-pending"
-    | "completed";
-  submittedDate: string;
-  fee: string;
-}
-
-export interface DashboardStats {
-  total: number;
-  pending: number;
-  approved: number;
-  rejected: number;
-}
-
-export interface DashboardData {
-  stats: DashboardStats;
-  recent: ApplicationSummary[];
-}
+// Re-export types for backward compatibility
+export type { ApplicationSummary, DashboardStats, DashboardData };
 
 // Get current user
 export async function getCurrentUser() {

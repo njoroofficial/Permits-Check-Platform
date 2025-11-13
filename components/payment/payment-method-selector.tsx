@@ -13,18 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { CreditCard, Smartphone, Building } from "lucide-react";
-
-// Import PaymentData from payment-page-client
-export interface PaymentData {
-  method: string;
-  amount: string;
-  applicationId: string;
-  transactionId: string;
-  status: string;
-  timestamp: string;
-  phoneNumber?: string;
-  cardLast4?: string;
-}
+import { PaymentData } from "@/types/payment";
 
 interface PaymentMethodSelectorProps {
   amount: string;
