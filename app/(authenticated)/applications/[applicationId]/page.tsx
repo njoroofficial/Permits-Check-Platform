@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ArrowLeft, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { Suspense } from "react";
 
 interface ApplicationPageProps {
   params: Promise<{
@@ -15,9 +16,13 @@ interface ApplicationPageProps {
   }>;
 }
 
-export default async function ApplicationPage({
-  params,
-}: ApplicationPageProps) {
+async function ApplicationContent({
+  paramsPromise,
+}: {
+  paramsPromise: Promise<{ applicationId: string }>;
+}) {
+  const { applicationId } = await paramsPromise;
+
   // Get current user
   const user = await getCurrentUser();
 
@@ -25,15 +30,32 @@ export default async function ApplicationPage({
     redirect("/login");
   }
 
-  // Await params (Next.js 15+)
-  const { applicationId } = await params;
-
   // Fetch application data
   const application = await getApplicationByNumber(applicationId);
 
   // Handle not found
   if (!application) {
     notFound();
+  }
+
+  // Check if permitType exists (required for ApplicationDetails component)
+  if (!application.permitType) {
+    return (
+      <main className="container mx-auto px-4 py-8">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            This application is missing permit type information. Please contact
+            support.
+          </AlertDescription>
+        </Alert>
+        <div className="mt-4">
+          <Button asChild>
+            <Link href="/applications">Back to My Applications</Link>
+          </Button>
+        </div>
+      </main>
+    );
   }
 
   // Verify user owns this application
@@ -74,7 +96,16 @@ export default async function ApplicationPage({
 
       <div className="space-y-8">
         {/* Application Header Card */}
-        <ApplicationDetails application={application} user={user} />
+        <ApplicationDetails
+          application={{
+            ...application,
+            permitType: {
+              name: application.permitType.name,
+              fee: application.permitType.fee.toString(),
+            },
+          }}
+          user={user}
+        />
 
         {/* Timeline and Documents Grid */}
         <div className="grid gap-8 lg:grid-cols-3">
@@ -130,5 +161,34 @@ export default async function ApplicationPage({
         </div>
       </div>
     </main>
+  );
+}
+
+export default function ApplicationPage({ params }: ApplicationPageProps) {
+  return (
+    <Suspense
+      fallback={
+        <main className="container mx-auto px-4 py-8">
+          <div className="space-y-8">
+            {/* Header Skeleton */}
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-20 bg-muted animate-pulse rounded" />
+              <div>
+                <div className="h-9 w-64 bg-muted animate-pulse rounded mb-2" />
+                <div className="h-5 w-80 bg-muted animate-pulse rounded" />
+              </div>
+            </div>
+            {/* Content Skeleton */}
+            <div className="h-96 bg-muted animate-pulse rounded" />
+            <div className="grid gap-8 lg:grid-cols-3">
+              <div className="lg:col-span-2 h-64 bg-muted animate-pulse rounded" />
+              <div className="h-64 bg-muted animate-pulse rounded" />
+            </div>
+          </div>
+        </main>
+      }
+    >
+      <ApplicationContent paramsPromise={params} />
+    </Suspense>
   );
 }

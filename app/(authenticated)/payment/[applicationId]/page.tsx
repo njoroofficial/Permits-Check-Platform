@@ -1,0 +1,75 @@
+import { redirect, notFound } from "next/navigation";
+import { getCurrentUser, getPermitTypeById } from "@/lib/dal";
+import { prisma } from "@/lib/db";
+import { PaymentPageClient } from "@/components/payment/payment-page-client";
+import { Suspense, use } from "react";
+
+interface PaymentPageProps {
+  params: Promise<{ applicationId: string }>;
+}
+
+async function PaymentContent({
+  paramsPromise,
+}: {
+  paramsPromise: Promise<{ applicationId: string }>;
+}) {
+  const { applicationId } = await paramsPromise;
+
+  // Get current user
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect("/login");
+  }
+
+  // Fetch application details
+  const applicationDetails = await prisma.application.findUnique({
+    where: { applicationNumber: applicationId },
+    include: {
+      permitType: true,
+    },
+  });
+
+  if (!applicationDetails) {
+    notFound();
+  }
+
+  // Verify user owns this application
+  if (applicationDetails.userId !== user.id) {
+    redirect("/dashboard");
+  }
+
+  // Fetch permit type
+  const permit = await getPermitTypeById(applicationDetails.permitTypeId);
+
+  if (!permit) {
+    notFound();
+  }
+
+  return (
+    <PaymentPageClient
+      applicationDetails={applicationDetails}
+      permit={permit}
+      applicationId={applicationId}
+    />
+  );
+}
+
+export default function PaymentPage({ params }: PaymentPageProps) {
+  return (
+    <Suspense
+      fallback={
+        <main className="container mx-auto px-4 py-8">
+          <div className="mb-8 text-center">
+            <div className="h-10 w-64 bg-muted animate-pulse rounded mx-auto mb-2" />
+            <div className="h-5 w-96 bg-muted animate-pulse rounded mx-auto" />
+          </div>
+          <div className="max-w-2xl mx-auto">
+            <div className="h-96 bg-muted animate-pulse rounded" />
+          </div>
+        </main>
+      }
+    >
+      <PaymentContent paramsPromise={params} />
+    </Suspense>
+  );
+}

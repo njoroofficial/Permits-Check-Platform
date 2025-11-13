@@ -4,6 +4,7 @@ import { QuickActions } from "@/components/dashboard/quick-actions";
 import { getCurrentUser, getDashboardData } from "@/lib/dal";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 
 interface WelcomeSectionProps {
   user: {
@@ -25,7 +26,10 @@ function WelcomeSection({ user }: WelcomeSectionProps) {
   );
 }
 
-export default async function DashboardPage() {
+async function DashboardContent() {
+  // Wait for connection to be established before accessing dynamic data
+  await connection();
+
   // Fetch authenticated user
   const user = await getCurrentUser();
 
@@ -38,18 +42,9 @@ export default async function DashboardPage() {
   const dashboardData = await getDashboardData(user.id);
 
   return (
-    <main className="container mx-auto px-4 py-8">
+    <>
       {/* Welcome Section */}
-      <Suspense
-        fallback={
-          <div className="mb-8">
-            <div className="h-10 w-64 bg-muted animate-pulse rounded mb-2" />
-            <div className="h-5 w-96 bg-muted animate-pulse rounded" />
-          </div>
-        }
-      >
-        <WelcomeSection user={user} />
-      </Suspense>
+      <WelcomeSection user={user} />
 
       {/* Stats Cards - Using real data */}
       <div className="mb-8">
@@ -75,6 +70,37 @@ export default async function DashboardPage() {
           <span>✉️ permits@muranga.go.ke</span>
         </div>
       </div>
+    </>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <main className="container mx-auto px-4 py-8">
+      <Suspense
+        fallback={
+          <div className="space-y-8">
+            {/* Welcome Section Skeleton */}
+            <div className="mb-8">
+              <div className="h-10 w-64 bg-muted animate-pulse rounded mb-2" />
+              <div className="h-5 w-96 bg-muted animate-pulse rounded" />
+            </div>
+            {/* Stats Cards Skeleton */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-32 bg-muted animate-pulse rounded" />
+              ))}
+            </div>
+            {/* Content Skeleton */}
+            <div className="grid gap-8 lg:grid-cols-2">
+              <div className="h-64 bg-muted animate-pulse rounded" />
+              <div className="h-64 bg-muted animate-pulse rounded" />
+            </div>
+          </div>
+        }
+      >
+        <DashboardContent />
+      </Suspense>
     </main>
   );
 }

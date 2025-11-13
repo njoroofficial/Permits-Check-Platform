@@ -4,7 +4,6 @@ import { getCurrentUser } from "@/lib/dal";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { revalidateTag } from "next/cache";
 
 const businessTypes = [
   "Retail",
@@ -155,52 +154,58 @@ export async function submitBusinessLicense(
       };
     }
 
-    // Create application in database
-    const application = await prisma.$transaction(async (tx) => {
-      return await tx.application.create({
-        data: {
-          applicationNumber: applicationId,
-          status: "DRAFT",
-          user: {
-            connect: { id: user.id },
-          },
-          permitType: {
-            connect: { id: validatedData.permitTypeId },
-          },
-          businessName: validatedData.businessName,
-          businessType: validatedData.businessType,
-          businessAddress: validatedData.businessAddress,
-          documents: {
-            create: documents.map((doc: any) => {
-              const fileUrl = doc.fileUrl || doc.url || doc.preview || "";
-              const documentType = doc.documentType || "OTHER";
+    // Create application in database with optimized transaction
+    const application = await prisma.$transaction(
+      async (tx) => {
+        return await tx.application.create({
+          data: {
+            applicationNumber: applicationId,
+            status: "DRAFT",
+            user: {
+              connect: { id: user.id },
+            },
+            permitType: {
+              connect: { id: validatedData.permitTypeId },
+            },
+            businessName: validatedData.businessName,
+            businessType: validatedData.businessType,
+            businessAddress: validatedData.businessAddress,
+            documents: {
+              create: documents.map((doc: any) => {
+                const fileUrl = doc.fileUrl || doc.url || doc.preview || "";
+                const documentType = doc.documentType || "OTHER";
 
-              return {
-                fileName: doc.fileName || doc.name,
-                originalName: doc.fileName || doc.name,
-                fileSize: doc.size || 0,
-                mimeType:
-                  doc.mimeType || doc.type || "application/octet-stream",
-                documentType: documentType,
-                fileUrl: fileUrl,
-              };
-            }),
+                return {
+                  fileName: doc.fileName || doc.name,
+                  originalName: doc.fileName || doc.name,
+                  fileSize: doc.size || 0,
+                  mimeType:
+                    doc.mimeType || doc.type || "application/octet-stream",
+                  documentType: documentType,
+                  fileUrl: fileUrl,
+                };
+              }),
+            },
+            submittedAt: new Date(),
           },
-          submittedAt: new Date(),
-        },
-        include: {
-          documents: true,
-          permitType: true,
-        },
-      });
-    });
+          include: {
+            documents: true,
+            permitType: true,
+          },
+        });
+      },
+      {
+        maxWait: 10000, // Maximum time to wait for a transaction slot (10 seconds)
+        timeout: 15000, // Maximum time the transaction can run (15 seconds)
+      }
+    );
 
     console.log("Application created successfully:", application.id); // DEBUG
 
     // Revalidate relevant paths
     revalidatePath("/dashboard");
     revalidatePath("/apply");
-    revalidateTag("applications");
+    revalidatePath("/applications");
 
     return {
       success: true,

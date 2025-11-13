@@ -1,5 +1,5 @@
 import { prisma } from "./db";
-import { cacheTag, unstable_noStore as noStore } from "next/cache";
+import { cacheTag } from "next/cache";
 import { createClient } from "./supabase/server";
 import { ApplicationStatus } from "./generated/prisma";
 
@@ -33,7 +33,6 @@ export interface DashboardData {
 
 // Get current user
 export async function getCurrentUser() {
-  noStore(); // Prevent static prerender caching
   try {
     const supabase = await createClient();
 

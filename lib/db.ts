@@ -12,6 +12,10 @@ export const prisma =
         url: process.env.DATABASE_URL,
       },
     },
+    transactionOptions: {
+      maxWait: 10000, // Maximum time to wait for a transaction to start (10 seconds)
+      timeout: 15000, // Maximum time a transaction can run (15 seconds)
+    },
   });
 
 // Prevent multiple connections in development
