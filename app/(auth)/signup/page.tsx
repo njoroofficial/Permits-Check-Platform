@@ -13,10 +13,10 @@ export default function SignupPage() {
           <Link href="/" className="inline-flex items-center gap-3 mb-6">
             <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
               <Image
-                src="/assets/murang`a logo.png"
-                alt="murang`a Logo"
-                width={50}
-                height={50}
+                src="/assets/muranga-logo.png"
+                alt="Muranga Logo"
+                width={48}
+                height={48}
               />
             </div>
             <div className="text-left">

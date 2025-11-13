@@ -64,10 +64,10 @@ export function DashboardHeader({ user }: CurrentUser) {
           <Link href={dashboardLink} className="flex items-center gap-3">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
               <Image
-                src="/assets/murang`a logo.png"
-                alt="murang`a Logo"
-                width={50}
-                height={50}
+                src="/assets/muranga-logo.png"
+                alt="Muranga Logo"
+                width={40}
+                height={40}
               />
             </div>
             <div>

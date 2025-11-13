@@ -35,12 +35,22 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protected routes
-  if (
-    !user &&
-    (request.nextUrl.pathname.startsWith("/dashboard") ||
-      request.nextUrl.pathname.startsWith("/apply"))
-  ) {
+  // Define public routes that don't require authentication
+  const publicRoutes = [
+    "/",
+    "/login",
+    "/signup",
+    "/assets",
+    "/_next",
+    "/favicon.ico",
+  ];
+
+  const isPublicRoute = publicRoutes.some((route) =>
+    request.nextUrl.pathname.startsWith(route)
+  );
+
+  // Protected routes - redirect to login if not authenticated
+  if (!user && !isPublicRoute) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 

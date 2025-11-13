@@ -166,10 +166,12 @@ export const getApplicationsByUserId = async (userId: string) => {
     // Serialize Decimal to string before returning
     return results.map((result) => ({
       ...result,
-      permitType: {
-        ...result.permitType,
-        fee: result.permitType.fee.toString(), // Convert Decimal to string
-      },
+      permitType: result.permitType
+        ? {
+            ...result.permitType,
+            fee: result.permitType.fee.toString(), // Convert Decimal to string
+          }
+        : null,
     }));
   } catch (error) {
     console.error("Error fetching applications by user ID:", error);
@@ -221,7 +223,20 @@ export const getApplicationByNumber = async (applicationNumber: string) => {
       },
     });
 
-    return result;
+    if (!result) {
+      return null;
+    }
+
+    // Serialize Decimal to string for permitType.fee
+    return {
+      ...result,
+      permitType: result.permitType
+        ? {
+            ...result.permitType,
+            fee: result.permitType.fee.toString(),
+          }
+        : null,
+    };
   } catch (error) {
     console.error("Error fetching application by number:", error);
     return null;
@@ -265,12 +280,18 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
     const stats: DashboardStats = {
       total: applications.length,
       pending: applications.filter(
-        (app) => app.status === "SUBMITTED" || app.status === "UNDER_REVIEW"
+        (app) =>
+          app.status === ApplicationStatus.SUBMITTED ||
+          app.status === ApplicationStatus.UNDER_REVIEW
       ).length,
       approved: applications.filter(
-        (app) => app.status === "APPROVED" || app.status === "COMPLETED"
+        (app) =>
+          app.status === ApplicationStatus.APPROVED ||
+          app.status === ApplicationStatus.COMPLETED
       ).length,
-      rejected: applications.filter((app) => app.status === "REJECTED").length,
+      rejected: applications.filter(
+        (app) => app.status === ApplicationStatus.REJECTED
+      ).length,
     };
 
     // Map to ApplicationSummary format (recent 5)

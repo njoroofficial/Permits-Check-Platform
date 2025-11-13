@@ -3,7 +3,11 @@
 import { ApplicationFilters } from "@/components/officer/application-filters";
 import { ApplicationReviewCard } from "@/components/officer/application-review-card";
 import { OfficerStats } from "@/components/officer/officer-stats";
+import { ApproveModal } from "@/components/officer/approve-modal";
+import { RejectModal } from "@/components/officer/reject-modal";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 // Mock data - replace with real API calls
 const mockStats = {
@@ -69,10 +73,19 @@ const mockApplications = [
 ];
 
 export default function OfficerDashboardPage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
+
+  // Modal states
+  const [approveModalOpen, setApproveModalOpen] = useState(false);
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [selectedApplication, setSelectedApplication] = useState<{
+    id: string;
+    applicantName: string;
+  } | null>(null);
 
   // Filter applications based on search and filters
   const filteredApplications = mockApplications.filter((app) => {
@@ -91,9 +104,10 @@ export default function OfficerDashboardPage() {
     return matchesSearch && matchesStatus && matchesType && matchesPriority;
   });
 
-  const activeFiltersCount = [statusFilter, typeFilter, priorityFilter].filter(
-    (filter) => filter !== "all"
-  ).length + (searchTerm ? 1 : 0);
+  const activeFiltersCount =
+    [statusFilter, typeFilter, priorityFilter].filter(
+      (filter) => filter !== "all"
+    ).length + (searchTerm ? 1 : 0);
 
   const handleClearFilters = () => {
     setStatusFilter("all");
@@ -103,23 +117,32 @@ export default function OfficerDashboardPage() {
   };
 
   const handleReview = (id: string) => {
-    console.log("Reviewing application:", id);
     // Navigate to detailed review page
+    router.push(`/officer-dashboard/applications/${id}`);
   };
 
-  const handleApprove = (id: string) => {
-    console.log("Approving application:", id);
-    // API call to approve application
-    alert(`Application ${id} approved successfully!`);
+  const handleApprove = (id: string, applicantName: string) => {
+    setSelectedApplication({ id, applicantName });
+    setApproveModalOpen(true);
   };
 
-  const handleReject = (id: string) => {
-    const reason = prompt("Please provide a reason for rejection:");
-    if (reason) {
-      console.log("Rejecting application:", id, "Reason:", reason);
-      // API call to reject application
-      alert(`Application ${id} rejected.`);
-    }
+  const handleReject = (id: string, applicantName: string) => {
+    setSelectedApplication({ id, applicantName });
+    setRejectModalOpen(true);
+  };
+
+  const handleApproveSuccess = () => {
+    toast.success("Application approved successfully!", {
+      description: `Application ${selectedApplication?.id} has been approved.`,
+    });
+    // TODO: Refresh applications list from API
+  };
+
+  const handleRejectSuccess = () => {
+    toast.success("Application rejected", {
+      description: `Application ${selectedApplication?.id} has been rejected.`,
+    });
+    // TODO: Refresh applications list from API
   };
 
   return (
@@ -225,6 +248,26 @@ export default function OfficerDashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* Modals */}
+        {selectedApplication && (
+          <>
+            <ApproveModal
+              isOpen={approveModalOpen}
+              onClose={() => setApproveModalOpen(false)}
+              applicationId={selectedApplication.id}
+              applicantName={selectedApplication.applicantName}
+              onSuccess={handleApproveSuccess}
+            />
+            <RejectModal
+              isOpen={rejectModalOpen}
+              onClose={() => setRejectModalOpen(false)}
+              applicationId={selectedApplication.id}
+              applicantName={selectedApplication.applicantName}
+              onSuccess={handleRejectSuccess}
+            />
+          </>
+        )}
       </main>
     </div>
   );

@@ -26,8 +26,8 @@ interface Application {
 interface ApplicationReviewCardProps {
   application: Application;
   onReview: (id: string) => void;
-  onApprove: (id: string) => void;
-  onReject: (id: string) => void;
+  onApprove: (id: string, applicantName: string) => void;
+  onReject: (id: string, applicantName: string) => void;
 }
 
 const statusColors = {
@@ -118,7 +118,9 @@ export function ApplicationReviewCard({
             <>
               <Button
                 size="sm"
-                onClick={() => onApprove(application.id)}
+                onClick={() =>
+                  onApprove(application.id, application.applicantName)
+                }
                 className="bg-green-600 hover:bg-green-700"
               >
                 <CheckCircle className="w-4 h-4 mr-2" />
@@ -127,7 +129,9 @@ export function ApplicationReviewCard({
               <Button
                 variant="destructive"
                 size="sm"
-                onClick={() => onReject(application.id)}
+                onClick={() =>
+                  onReject(application.id, application.applicantName)
+                }
                 className="bg-red-600 hover:bg-red-700"
               >
                 <XCircle className="w-4 h-4 mr-2" />

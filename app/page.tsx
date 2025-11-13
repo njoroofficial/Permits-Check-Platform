@@ -159,10 +159,10 @@ export default function HomePage() {
               {/* county logo div */}
               <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
                 <Image
-                  src="/assets/murang`a logo.png"
-                  alt="murang`a Logo"
-                  width={50}
-                  height={50}
+                  src="/assets/muranga-logo.png"
+                  alt="Muranga Logo"
+                  width={40}
+                  height={40}
                 />
               </div>
               {/* county name and system name */}
@@ -279,9 +279,9 @@ export default function HomePage() {
                       {service.duration}
                     </div>
                   </div>
-                  <Button className="w-full">
-                    <Link href="/login">Apply Now</Link>
-                  </Button>
+                  <Link href="/login" className="w-full">
+                    <Button className="w-full">Apply Now</Button>
+                  </Link>
                 </CardContent>
               </Card>
             ))}
@@ -446,10 +446,10 @@ export default function HomePage() {
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-8 bg-primary-foreground/20 rounded-lg flex items-center justify-center">
                   <Image
-                    src="/assets/murang`a logo.png"
-                    alt="murang`a Logo"
-                    width={50}
-                    height={50}
+                    src="/assets/muranga-logo.png"
+                    alt="Muranga Logo"
+                    width={32}
+                    height={32}
                   />
                 </div>
                 <div>

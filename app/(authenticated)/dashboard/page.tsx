@@ -2,19 +2,17 @@ import { RecentApplications } from "@/components/dashboard/recent-applications";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { getCurrentUser, getDashboardData } from "@/lib/dal";
-import { connection } from "next/server";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 
-async function WelcomeSection() {
-  await connection();
-  const user = await getCurrentUser();
+interface WelcomeSectionProps {
+  user: {
+    firstName: string;
+    lastName: string;
+  };
+}
 
-  // Guard: Redirect if no user found
-  if (!user) {
-    redirect("/login");
-  }
-
+function WelcomeSection({ user }: WelcomeSectionProps) {
   return (
     <div className="mb-8">
       <h1 className="text-3xl font-bold mb-2">
@@ -50,7 +48,7 @@ export default async function DashboardPage() {
           </div>
         }
       >
-        <WelcomeSection />
+        <WelcomeSection user={user} />
       </Suspense>
 
       {/* Stats Cards - Using real data */}

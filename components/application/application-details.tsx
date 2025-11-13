@@ -28,7 +28,7 @@ interface ApplicationDetailsProps {
     createdAt: Date;
     permitType: {
       name: string;
-      fee: any; // Decimal type from Prisma
+      fee: string; // Serialized Decimal as string
     };
   };
   user: {
@@ -196,7 +196,8 @@ export function ApplicationDetails({
                     Application Fee
                   </p>
                   <p className="font-medium text-lg text-primary">
-                    KES {application.permitType.fee.toString()}
+                    KES{" "}
+                    {parseFloat(application.permitType.fee).toLocaleString()}
                   </p>
                 </div>
               </div>
