@@ -1,6 +1,6 @@
 # 🏛️ Permits Platform
 
-**Streamlining permit applications and approvals for modern government services**
+> Streamlining permit applications and approvals for modern government services
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
@@ -229,7 +229,7 @@ Navigate to [http://localhost:3000](http://localhost:3000) to see the applicatio
 
 ## 📁 Project Structure
 
-```
+```text
 permits-platform/
 ├── app/                          # Next.js App Router
 │   ├── (auth)/                   # Authentication routes (login, signup)
@@ -343,4 +343,4 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ---
 
-**Built with ❤️ for better government services**
+Built with ❤️ for better government services
